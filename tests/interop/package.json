@@ -2,6 +2,11 @@
   "name": "web-go-adonis-crypto-fixtures",
   "private": true,
   "dependencies": {
-    "jsonwebtoken": "9.0.2"
+    "jsonwebtoken": "9.0.2",
+    "@vinejs/vine": "3.0.1",
+    "@adonisjs/hash": "9.1.1",
+    "@adonisjs/encryption": "6.0.2",
+    "validator": "13.15.15",
+    "edge.js": "6.3.0"
   }
 }

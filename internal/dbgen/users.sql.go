@@ -7,7 +7,65 @@ package dbgen
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const createPublicUser = `-- name: CreatePublicUser :one
+INSERT INTO public_users (email, password, account_status, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id
+`
+
+type CreatePublicUserParams struct {
+	Email         *string            `json:"email"`
+	Password      *string            `json:"password"`
+	AccountStatus string             `json:"account_status"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) CreatePublicUser(ctx context.Context, arg CreatePublicUserParams) (int32, error) {
+	row := q.db.QueryRow(ctx, createPublicUser,
+		arg.Email,
+		arg.Password,
+		arg.AccountStatus,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+	)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
+const lockEmail = `-- name: LockEmail :exec
+SELECT pg_advisory_xact_lock(hashtext($1::text))
+`
+
+func (q *Queries) LockEmail(ctx context.Context, email string) error {
+	_, err := q.db.Exec(ctx, lockEmail, email)
+	return err
+}
+
+const publicUserByEmail = `-- name: PublicUserByEmail :one
+SELECT id, email, password, created_at, updated_at, member_id, account_status FROM public_users WHERE email=$1 LIMIT 1
+`
+
+// Lucid findBy('email', ...): exact match, first row.
+func (q *Queries) PublicUserByEmail(ctx context.Context, email *string) (PublicUser, error) {
+	row := q.db.QueryRow(ctx, publicUserByEmail, email)
+	var i PublicUser
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Password,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.MemberID,
+		&i.AccountStatus,
+	)
+	return i, err
+}
 
 const publicUserByID = `-- name: PublicUserByID :one
 SELECT id, email, password, created_at, updated_at, member_id, account_status FROM public_users WHERE id=$1
@@ -26,4 +84,67 @@ func (q *Queries) PublicUserByID(ctx context.Context, id int32) (PublicUser, err
 		&i.AccountStatus,
 	)
 	return i, err
+}
+
+const publicUsersByLowerEmail = `-- name: PublicUsersByLowerEmail :many
+SELECT id, email, password, created_at, updated_at, member_id, account_status FROM public_users WHERE lower(email) = $1::text LIMIT 2
+`
+
+// Google sign-in matches case-insensitively and refuses ambiguity (limit 2).
+func (q *Queries) PublicUsersByLowerEmail(ctx context.Context, email string) ([]PublicUser, error) {
+	rows, err := q.db.Query(ctx, publicUsersByLowerEmail, email)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []PublicUser{}
+	for rows.Next() {
+		var i PublicUser
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.Password,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.MemberID,
+			&i.AccountStatus,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const setMemberID = `-- name: SetMemberID :exec
+UPDATE public_users SET member_id=$2, updated_at=$3 WHERE id=$1
+`
+
+type SetMemberIDParams struct {
+	ID        int32              `json:"id"`
+	MemberID  *string            `json:"member_id"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) SetMemberID(ctx context.Context, arg SetMemberIDParams) error {
+	_, err := q.db.Exec(ctx, setMemberID, arg.ID, arg.MemberID, arg.UpdatedAt)
+	return err
+}
+
+const setPassword = `-- name: SetPassword :exec
+UPDATE public_users SET password=$2, updated_at=$3 WHERE id=$1
+`
+
+type SetPasswordParams struct {
+	ID        int32              `json:"id"`
+	Password  *string            `json:"password"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) SetPassword(ctx context.Context, arg SetPasswordParams) error {
+	_, err := q.db.Exec(ctx, setPassword, arg.ID, arg.Password, arg.UpdatedAt)
+	return err
 }

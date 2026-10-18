@@ -13,8 +13,8 @@ HTTP, middleware and the proxy live in `internal/webapi`. The learner JWT lives 
 
 | Phase | Scope | Status |
 | --- | --- | --- |
-| 0 | Service, config, request id/logging, CORS, learner JWT, auth middleware, proxy, `/health` | **Done**: proxies every `/v2` route |
-| 1 | `auth/*` (register, login, Google, check-email, forgot/reset password with an SMTP mailer, logout) | Pending |
+| 0 | Service, config, request id/logging, CORS, learner JWT, auth middleware, proxy, `/health` | **Done** |
+| 1 | `auth/*`: register, login, Google, check-email, forgot/reset password (SMTP mailer), logout | **Done**: `scripts/contract-auth.mjs` passes 47/47 |
 | 2 | Public reads: activities, categories, clubs, monthly achievements, certificate verify/show (with throttle) | Pending |
 | 3 | Profiles, picture, history, notifications, achievements, ruang-curhat, members/submit | Pending |
 | 4 | Activity and club registrations | Pending |
@@ -24,6 +24,37 @@ HTTP, middleware and the proxy live in `internal/webapi`. The learner JWT lives 
 
 Every phase must pass the contract diff against Adonis for the routes it moves, plus
 `make check` and `make test-unit`. It also ports the matching web-be Japa specs.
+
+## Contract checks
+
+`make test-contract` (currently `scripts/contract-auth.mjs`) does the following:
+
+1. Creates an owned schema `web_go_<run>` in the test database and migrates it with Ace
+   from `../kaderisasi-admin-be`.
+2. Starts Adonis web-be and this service against that schema, with a synthetic `APP_KEY`
+   and a local SMTP sink.
+3. Sends the same requests to both, then compares status, content type, JSON body
+   (including key order) and the resulting `public_users`/`profiles` rows.
+4. Runs the Go integration tests (`-tags=integration`) inside the same schema.
+5. Drops the schema, also on failure. A results summary is written to
+   `.artifacts/contract-auth.json`.
+
+It needs `../kaderisasi-web-be` with `node_modules`, `../kaderisasi-admin-be` with
+`node_modules`, and `../env/test/*`. Ports 3346/3347 must be free.
+
+Phase 1 coverage:
+- every validation shape;
+- JSON, form and query-string input;
+- duplicate and mixed-case emails;
+- a null password, a non-scrypt hash, and inactive accounts;
+- tokens used across the two implementations;
+- recovery email headers and HTML;
+- reset links mailed by one side and accepted by the other.
+
+Google sign-in is checked against Adonis for its validation and configuration answers.
+The code exchange and ID-token checks are unit-tested against a fake Google
+(`internal/google`), and `google_account.spec.ts` is ported as an integration test
+(`internal/member`).
 
 ## Compatibility rules implemented in phase 0
 
@@ -61,6 +92,33 @@ Every phase must pass the contract diff against Adonis for the routes it moves, 
 - **Proxy**: method, path, query, body, cookies and headers are forwarded. The incoming
   `X-Forwarded-For` chain is kept and the caller's address is appended. If Adonis is
   unreachable the response is `502 {"message":"LEGACY_API_UNAVAILABLE"}`.
+
+## Deliberate deviations (phase 1)
+
+- **Framework error bodies:** Adonis runs with `NODE_ENV=development` (the prod env file
+  says so too), so bodyparser errors include `frames` with server stack traces. Go returns
+  the same status, `message`, `name` and `status` without frames. For malformed JSON, V8's
+  `SyntaxError` wording is reproduced only for a truncated document ("Unexpected end of
+  JSON input"); other syntax errors say "Invalid JSON body".
+- **500 `GENERAL_ERROR` bodies from database failures** carry Go/pgx error text, not
+  knex's `insert into ... - <message>` text.
+- **Nested form/query keys** (`a[b]=`, `a.b=`) are not expanded the way the `qs` library
+  does. No auth route reads nested input.
+- **`extra_data` (jsonb)** is passed through compacted. JavaScript's reordering of
+  integer-like object keys is not reproduced.
+- **Unicode edge cases:** a lone UTF-16 surrogate, and the few characters whose lower-case
+  form differs between JavaScript and Go (e.g. `İ`).
+
+## Behaviour kept on purpose (looks odd, but clients depend on it)
+
+- Auth validation failures answer **500**, with `{message: <first message>, error: [...]}`.
+  `forgot-password` answers `{message: "GENERAL_ERROR", error: "Validation failure"}`.
+- Login looks the email up after lower-casing it, so a stored mixed-case email cannot log
+  in with a password; Google sign-in matches case-insensitively. Login does not check
+  `account_status`.
+- A password hash that is not scrypt simply fails with `401 WRONG_PASSWORD`.
+- Logout only answers `LOGOUT_SUCCESS`; learner JWTs cannot be revoked.
+- Reset links are reusable until they expire (30 minutes).
 
 ### Client IP note
 

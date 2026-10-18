@@ -29,6 +29,19 @@ type Config struct {
 	DBSchema    string
 	Location    *time.Location
 	LegacyURL   *url.URL
+
+	// Password recovery (required by web-be's start/env.ts too).
+	ResetPasswordURL string
+	MailFrom         string
+	SMTPHost         string
+	SMTPPort         string
+	SMTPUsername     string
+	SMTPPassword     string
+
+	// Google sign-in; the route answers 503 unless all three are set.
+	GoogleClientID     string
+	GoogleClientSecret string
+	GoogleRedirectURI  string
 }
 
 func Load() (Config, error) {
@@ -57,9 +70,15 @@ func Load() (Config, error) {
 	c := Config{Environment: value("NODE_ENV", "development"), Host: value("HOST", "127.0.0.1"), Port: port,
 		AppKey: os.Getenv("APP_KEY"), LogLevel: value("LOG_LEVEL", "info"), DBHost: os.Getenv("DB_HOST"),
 		DBPort: uint16(dbPort), DBUser: os.Getenv("DB_USER"), DBPassword: os.Getenv("DB_PASSWORD"), DBName: os.Getenv("DB_DATABASE"),
-		DBSchema: schema, Location: location}
+		DBSchema: schema, Location: location,
+		ResetPasswordURL: os.Getenv("RESET_PASSWORD_URL"), MailFrom: os.Getenv("MAIL_FROM"), SMTPHost: os.Getenv("SMTP_HOST"),
+		SMTPPort: os.Getenv("SMTP_PORT"), SMTPUsername: os.Getenv("SMTP_USERNAME"), SMTPPassword: os.Getenv("SMTP_PASSWORD"),
+		GoogleClientID: os.Getenv("GOOGLE_CLIENT_ID"), GoogleClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"), GoogleRedirectURI: os.Getenv("GOOGLE_REDIRECT_URI")}
 	if len(c.AppKey) < 16 || c.DBHost == "" || c.DBUser == "" || c.DBName == "" {
 		return Config{}, errors.New("APP_KEY and database configuration are required")
+	}
+	if c.ResetPasswordURL == "" || c.MailFrom == "" || c.SMTPHost == "" || c.SMTPPort == "" {
+		return Config{}, errors.New("RESET_PASSWORD_URL, MAIL_FROM, SMTP_HOST and SMTP_PORT are required")
 	}
 	raw := strings.TrimRight(strings.TrimSpace(os.Getenv("WEB_BE_LEGACY_URL")), "/")
 	if raw == "" {

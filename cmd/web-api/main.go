@@ -16,6 +16,8 @@ import (
 	"kaderisasi/web/internal/config"
 	"kaderisasi/web/internal/database"
 	"kaderisasi/web/internal/dbgen"
+	"kaderisasi/web/internal/google"
+	"kaderisasi/web/internal/mail"
 	"kaderisasi/web/internal/webapi"
 )
 
@@ -36,7 +38,11 @@ func run() error {
 		return err
 	}
 	defer pool.Close()
-	app := &webapi.Server{Config: c, Users: dbgen.New(pool), Logger: logger}
+	app := &webapi.Server{Config: c, Users: dbgen.New(pool), Pool: pool, Logger: logger,
+		Mail: mail.SMTP{Host: c.SMTPHost, Port: c.SMTPPort, Username: c.SMTPUsername, Password: c.SMTPPassword}}
+	if c.GoogleClientID != "" && c.GoogleClientSecret != "" && c.GoogleRedirectURI != "" {
+		app.Google = &google.Client{ClientID: c.GoogleClientID, ClientSecret: c.GoogleClientSecret, RedirectURI: c.GoogleRedirectURI}
+	}
 	server := &http.Server{Addr: c.Address(), Handler: app.Handler(), ReadHeaderTimeout: 10 * time.Second, IdleTimeout: 90 * time.Second}
 	failure := make(chan error, 1)
 	go func() {

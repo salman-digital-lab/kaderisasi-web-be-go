@@ -3,7 +3,7 @@ package config
 import "testing"
 
 func TestLoad(t *testing.T) {
-	base := map[string]string{"APP_KEY": "synthetic-test-key-never-use", "DB_HOST": "localhost", "DB_USER": "user", "DB_DATABASE": "db", "PORT": "", "WEB_BE_LEGACY_URL": "http://localhost:3335/"}
+	base := map[string]string{"APP_KEY": "synthetic-test-key-never-use", "DB_HOST": "localhost", "DB_USER": "user", "DB_DATABASE": "db", "PORT": "", "WEB_BE_LEGACY_URL": "http://localhost:3335/", "RESET_PASSWORD_URL": "http://localhost:3000/reset", "MAIL_FROM": "noreply@example.test", "SMTP_HOST": "localhost", "SMTP_PORT": "2525"}
 	set := func(t *testing.T, overrides map[string]string) {
 		for k, v := range base {
 			t.Setenv(k, v)
@@ -28,6 +28,7 @@ func TestLoad(t *testing.T) {
 		"admin port":       {"PORT": "3334"},
 		"invalid port":     {"PORT": "abc"},
 		"missing key":      {"APP_KEY": ""},
+		"missing smtp":     {"SMTP_HOST": ""},
 	} {
 		t.Run(name, func(t *testing.T) {
 			set(t, overrides)

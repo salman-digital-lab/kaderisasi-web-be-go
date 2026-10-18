@@ -10,12 +10,13 @@ origin throughout. Phases, compatibility rules, local running and deployment are
 
 ## Local setup
 
-Required: Go **1.26.8**, sqlc **1.31.1**, Node **24** (runner and the Adonis token fixture).
+Required: Go **1.26.8**, sqlc **1.31.1**, Node **24** (runner, interop fixtures and contract checks).
 
 ```sh
 npm ci --prefix tests/interop
 make check
-make test-unit
+make test-unit       # includes byte-level interop tests against the real Node libraries
+make test-contract   # differential check against Adonis web-be (owned test schema)
 ```
 
 ## Running

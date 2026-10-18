@@ -5,6 +5,7 @@
 package webapi
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"log/slog"
@@ -12,8 +13,12 @@ import (
 	"net/http/httputil"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
+
 	"kaderisasi/web/internal/config"
 	"kaderisasi/web/internal/dbgen"
+	"kaderisasi/web/internal/google"
+	"kaderisasi/web/internal/mail"
 )
 
 // UserStore loads the learner a token names, like the Adonis session user
@@ -25,6 +30,10 @@ type UserStore interface {
 type Server struct {
 	Config config.Config
 	Users  UserStore
+	Pool   *pgxpool.Pool
+	Mail   mail.Sender
+	// Google is nil when Google sign-in is not configured.
+	Google *google.Client
 	Logger *slog.Logger
 	// Now is the clock used for token checks; nil means time.Now.
 	Now func() time.Time
@@ -41,7 +50,8 @@ func (s *Server) Handler() http.Handler {
 			Status string `json:"status"`
 		}{"ok"})
 	})
-	// Register route groups here as they are ported (see docs/WEB_API.md).
+	// Route groups ported from web-be (see docs/MIGRATION.md).
+	s.registerAuth()
 	s.mux.Handle("/", s.proxy)
 	return s.observe(s.cors(s.mux))
 }
@@ -67,10 +77,21 @@ func (s *Server) now() time.Time {
 	return time.Now()
 }
 
+// writeJSON matches Adonis's response.send for objects: JSON.stringify output
+// (no HTML escaping, no trailing newline).
 func writeJSON(w http.ResponseWriter, status int, data any) {
+	var b bytes.Buffer
+	encoder := json.NewEncoder(&b)
+	encoder.SetEscapeHTML(false)
+	if err := encoder.Encode(data); err != nil {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = w.Write([]byte(`{"message":"GENERAL_ERROR"}`))
+		return
+	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(data)
+	_, _ = w.Write(bytes.TrimRight(b.Bytes(), "\n"))
 }
 
 type message struct {

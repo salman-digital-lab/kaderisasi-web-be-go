@@ -10,7 +10,7 @@ COPY go.mod go.sum ./
 RUN go mod download && go mod verify
 COPY cmd ./cmd
 COPY internal ./internal
-COPY scripts/crypto-fixture.cjs ./scripts/crypto-fixture.cjs
+COPY scripts/crypto-fixture.cjs scripts/vine-fixture.mjs scripts/edge-fixture.mjs ./scripts/
 COPY --from=interop /usr/local/bin/node /usr/local/bin/node
 COPY --from=interop /interop ./tests/interop
 RUN go vet ./... && go test -count=1 -timeout=10m ./... \
