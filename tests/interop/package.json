@@ -1,0 +1,7 @@
+{
+  "name": "web-go-adonis-crypto-fixtures",
+  "private": true,
+  "dependencies": {
+    "jsonwebtoken": "9.0.2"
+  }
+}
