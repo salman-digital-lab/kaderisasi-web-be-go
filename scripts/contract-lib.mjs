@@ -6,7 +6,7 @@ import { createServer } from 'node:http';
 import { createHmac } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { randomBytes } from 'node:crypto';
-import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { readFileSync, mkdirSync, writeFileSync, appendFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseEnv, isDeepStrictEqual } from 'node:util';
@@ -143,6 +143,8 @@ export class Comparison {
     }
     const response = await fetch(`http://127.0.0.1:${this.ports[target]}${path}`, init);
     const text = await response.text();
+    // One line per request, so route coverage can be checked afterwards.
+    if (target === 'adonis') appendFileSync(resolve(artifacts, 'contract-calls.log'), `${method} ${path} ${response.status}\n`);
     let parsed; try { parsed = JSON.parse(text); } catch {}
     const picked = Object.fromEntries(this.headers.map((h) => [h, response.headers.get(h)]));
     return { status: response.status, type: response.headers.get('content-type'), headers: picked, text, json: parsed };

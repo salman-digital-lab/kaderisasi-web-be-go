@@ -17,7 +17,7 @@ HTTP and middleware live in `internal/webapi`. The learner JWT lives in
 | 2 | Public reads: activities, categories, clubs, monthly achievements, certificate verify/show (with throttle) | **Done**: `scripts/contract-public.mjs` passes 210/210, byte for byte |
 | 3 | Profiles, picture, history, notifications, achievements, ruang-curhat, members/submit | **Done**: `scripts/contract-members.mjs` passes 180/180 (one key-order note, below) |
 | 4 | Activity and club registrations | **Done**: covered by `scripts/contract-forms.mjs` |
-| 5 | Custom forms, sessions, responses, uploads | **Done**: `scripts/contract-forms.mjs` passes 260/260 together with phase 4 |
+| 5 | Custom forms, sessions, responses, uploads | **Done**: `scripts/contract-forms.mjs` passes 264/264 together with phase 4, including concurrent duplicate registrations |
 | 6 | Courses and the remaining certificate routes | **Done**: `scripts/contract-courses.mjs` passes 181/181 |
 | 7 | Remove the proxy; native `404` for unknown routes | **Done**: `scripts/contract-routing.mjs` passes 25/25. Retiring the Adonis deployment is an ops step (below) |
 
@@ -41,6 +41,12 @@ Each one does the following:
 4. Runs the Go integration tests (`-tags=integration`) inside the same schema.
 5. Drops the schema, also on failure. A results summary is written to
    `.artifacts/contract-auth.json`.
+
+Every compared request is also appended to `.artifacts/contract-calls.log` (method, path,
+Adonis status), so route coverage can be checked against `node ace list:routes --json`:
+all 58 web-be routes are exercised, and all but three with a 2xx answer (the two club
+routes that never succeed in web-be, and Google sign-in, which needs real Google and is
+covered by unit tests against a fake).
 
 It needs `../kaderisasi-web-be` with `node_modules`, `../kaderisasi-admin-be` with
 `node_modules`, and `../env/test/*`. Ports 3346/3347 must be free.

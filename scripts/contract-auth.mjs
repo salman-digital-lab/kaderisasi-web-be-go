@@ -10,7 +10,7 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { randomBytes } from 'node:crypto';
-import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { readFileSync, mkdirSync, writeFileSync, appendFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -138,6 +138,7 @@ try {
     if (token) headers.authorization = `Bearer ${token}`;
     const response = await fetch(`http://127.0.0.1:${ports[target]}${path}`, { method, headers, body });
     const text = await response.text();
+    if (target === 'adonis') appendFileSync(resolve(root, '.artifacts/contract-calls.log'), `${method} ${path} ${response.status}\n`);
     let parsed; try { parsed = JSON.parse(text); } catch {}
     return { status: response.status, type: response.headers.get('content-type'), cache: response.headers.get('cache-control'), text, json: parsed };
   }

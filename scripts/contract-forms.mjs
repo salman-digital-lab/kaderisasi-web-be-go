@@ -323,6 +323,23 @@ const ok = await withContract('contract-forms', { ports, env: { ...smtp, ...driv
   await both('cancel club bob open', 'DELETE', `/v2/clubs/${ids.openClub}/registration`, { headers: auth(ids.bob) });
   await compareState('cancel club bob open');
 
+  // --- Concurrency: duplicate registrations racing each other ----------------
+  // Each server gets the same burst; the multiset of statuses and the rows
+  // created must match (one success, the rest ALREADY_REGISTERED).
+  const burst = async (name, body) => {
+    const outcome = {};
+    for (const target of ['adonis', 'go']) {
+      const results = await Promise.all(Array.from({ length: 8 }, () => comparison.call(target, 'POST', '/v2/custom-forms/register', { headers: auth(ids.carol), json: body })));
+      outcome[target] = results.map((r) => `${r.status} ${r.json?.message}`).sort();
+    }
+    console.log(`${name}: adonis ${JSON.stringify(outcome.adonis)} go ${JSON.stringify(outcome.go)}`);
+    comparison.count++;
+    if (!isDeepStrictEqual(outcome.adonis, outcome.go)) comparison.failures.push({ name, adonis: outcome.adonis, go: outcome.go });
+    await compareState(name);
+  };
+  await burst('concurrent activity registration', { feature_type: 'activity_registration', feature_id: ids.noGuest, custom_form_data: { nama: 'Carol' } });
+  await burst('concurrent club registration', { feature_type: 'club_registration', feature_id: ids.lastDayClub, custom_form_data: { nama: 'Carol' } });
+
   // --- Phase 5: standalone responses -----------------------------------------
   const pub = await session('public guest', ids.publicForm, hash.public);
   await upload('public photo', `/v2/custom-forms/${ids.publicForm}/files/foto`, null, pub, uploadID(31), filePart(smallJpg, 'foto.jpg', 'image/jpeg'));
