@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -33,16 +32,9 @@ func (u users) PublicUserByID(_ context.Context, id int32) (dbgen.PublicUser, er
 	return user, nil
 }
 
-type seen struct {
-	method, path, query, body, auth, cookie, requestID, forwardedFor string
-}
-
-func newTestServer(t *testing.T, upstream http.Handler) (*Server, http.Handler) {
+func newTestServer(t *testing.T) (*Server, http.Handler) {
 	t.Helper()
-	legacy := httptest.NewServer(upstream)
-	t.Cleanup(legacy.Close)
-	target, _ := url.Parse(legacy.URL)
-	s := &Server{Config: config.Config{AppKey: testKey, LegacyURL: target}, Users: users{42: {ID: 42, AccountStatus: "active"}},
+	s := &Server{Config: config.Config{AppKey: testKey}, Users: users{42: {ID: 42, AccountStatus: "active"}},
 		Logger: slog.New(slog.NewTextHandler(io.Discard, nil)), Now: func() time.Time { return testNow }}
 	h := s.Handler()
 	learner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -63,44 +55,8 @@ func learnerToken(t *testing.T, id int32) string {
 	return token
 }
 
-func TestProxyForwardsUnownedRoutesUnchanged(t *testing.T) {
-	var got seen
-	_, h := newTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, _ := io.ReadAll(r.Body)
-		got = seen{r.Method, r.URL.Path, r.URL.RawQuery, string(body), r.Header.Get("Authorization"), r.Header.Get("Cookie"), r.Header.Get("X-Request-Id"), r.Header.Get("X-Forwarded-For")}
-		w.Header().Set("X-Request-Id", r.Header.Get("X-Request-Id"))
-		w.Header().Set("Access-Control-Allow-Origin", "https://web.example")
-		w.Header().Set("Set-Cookie", "a=b; Path=/")
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.WriteHeader(422)
-		_, _ = w.Write([]byte(`{"errors":[{"message":"invalid"}]}`))
-	}))
-	req := httptest.NewRequest("PUT", "/v2/unported/abc?x=1&y=%20", strings.NewReader(`{"a":1}`))
-	req.RemoteAddr = "10.0.0.9:5555"
-	req.Header.Set("Authorization", "Bearer abc")
-	req.Header.Set("Cookie", "token=t")
-	req.Header.Set("X-Request-Id", "req-1")
-	req.Header.Set("X-Forwarded-For", "203.0.113.7")
-	req.Header.Set("Origin", "https://web.example")
-	rec := httptest.NewRecorder()
-	h.ServeHTTP(rec, req)
-	want := seen{"PUT", "/v2/unported/abc", "x=1&y=%20", `{"a":1}`, "Bearer abc", "token=t", "req-1", "203.0.113.7, 10.0.0.9"}
-	if got != want {
-		t.Fatalf("upstream saw %+v, want %+v", got, want)
-	}
-	if rec.Code != 422 || rec.Body.String() != `{"errors":[{"message":"invalid"}]}` || rec.Header().Get("Set-Cookie") != "a=b; Path=/" {
-		t.Fatalf("response not passed through: %d %q %v", rec.Code, rec.Body.String(), rec.Header())
-	}
-	if ids := rec.Header().Values("X-Request-Id"); len(ids) != 1 || ids[0] != "req-1" {
-		t.Fatalf("request id header %v", ids)
-	}
-	if origins := rec.Header().Values("Access-Control-Allow-Origin"); len(origins) != 1 {
-		t.Fatalf("CORS origin duplicated on proxied response: %v", origins)
-	}
-}
-
 func TestHealthAndRequestIDAreOwned(t *testing.T) {
-	_, h := newTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { t.Error("health proxied") }))
+	_, h := newTestServer(t)
 	for _, id := range []string{"", "bad id with spaces", strings.Repeat("a", 129)} {
 		req := httptest.NewRequest("GET", "/health", nil)
 		req.Header.Set("X-Request-Id", id)
@@ -116,7 +72,7 @@ func TestHealthAndRequestIDAreOwned(t *testing.T) {
 }
 
 func TestPreflightMatchesAdonisCors(t *testing.T) {
-	_, h := newTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { t.Error("preflight proxied") }))
+	_, h := newTestServer(t)
 	req := httptest.NewRequest("OPTIONS", "/v2/profiles", nil)
 	req.Header.Set("Origin", "https://web.example")
 	req.Header.Set("Access-Control-Request-Method", "PUT")
@@ -148,19 +104,20 @@ func TestPreflightMatchesAdonisCors(t *testing.T) {
 	}
 }
 
-func TestLegacyUnavailable(t *testing.T) {
-	s, _ := newTestServer(t, http.NotFoundHandler())
-	s.Config.LegacyURL, _ = url.Parse("http://127.0.0.1:1")
-	h := s.Handler()
-	rec := httptest.NewRecorder()
-	h.ServeHTTP(rec, httptest.NewRequest("GET", "/v2/unported", nil))
-	if rec.Code != 502 || strings.TrimSpace(rec.Body.String()) != `{"message":"LEGACY_API_UNAVAILABLE"}` {
-		t.Fatalf("got %d %s", rec.Code, rec.Body.String())
+func TestUnknownRoutesAnswerRouteNotFound(t *testing.T) {
+	_, h := newTestServer(t)
+	for _, c := range []struct{ method, path string }{{"GET", "/v2/unknown"}, {"DELETE", "/v2/courses"}, {"POST", "/"}, {"GET", "/v2//activities"}, {"GET", "/v2/./x"}} {
+		rec := httptest.NewRecorder()
+		h.ServeHTTP(rec, httptest.NewRequest(c.method, c.path, nil))
+		want := `{"message":"Cannot ` + c.method + `:` + c.path + `","name":"Exception","status":404}`
+		if rec.Code != 404 || rec.Body.String() != want {
+			t.Fatalf("%s %s: %d %s", c.method, c.path, rec.Code, rec.Body.String())
+		}
 	}
 }
 
 func TestLearnerAuthentication(t *testing.T) {
-	_, h := newTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { t.Error("test route proxied") }))
+	_, h := newTestServer(t)
 	legacy, _ := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"userId": 42, "exp": testNow.Unix() + 60}).SignedString([]byte(testKey))
 	noExpiry, _ := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"userId": 42, "aud": auth.PublicAudience}).SignedString([]byte(testKey))
 	admin, _ := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"userId": 42, "aud": "kaderisasi-admin", "exp": testNow.Unix() + 900}).SignedString([]byte(testKey))

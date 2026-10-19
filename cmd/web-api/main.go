@@ -1,6 +1,5 @@
-// Command web-api serves the public member API on port 3333. It answers the
-// routes ported from kaderisasi-web-be and proxies the rest to the Adonis
-// service at WEB_BE_LEGACY_URL (see docs/WEB_API.md).
+// Command web-api serves the public member API on port 3333, the Go
+// replacement for kaderisasi-web-be (see docs/MIGRATION.md).
 package main
 
 import (
@@ -50,7 +49,7 @@ func run() error {
 	server := &http.Server{Addr: c.Address(), Handler: app.Handler(), ReadHeaderTimeout: 10 * time.Second, IdleTimeout: 90 * time.Second}
 	failure := make(chan error, 1)
 	go func() {
-		logger.Info("web API listening", "address", c.Address(), "legacy", c.LegacyURL.String())
+		logger.Info("web API listening", "address", c.Address())
 		failure <- server.ListenAndServe()
 	}()
 	select {

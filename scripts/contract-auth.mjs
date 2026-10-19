@@ -115,14 +115,14 @@ try {
 
   if (spawnSync('go', ['build', '-o', resolve(root, 'bin/web-api'), './cmd/web-api'], { cwd: root, stdio: 'inherit' }).status !== 0) throw new Error('go build failed');
   const integration = spawnSync('go', ['test', '-race', '-count=1', '-v', '-tags=integration', './internal/member/'], { cwd: root, encoding: 'utf8',
-    env: { ...process.env, ...testEnv, ...shared, DB_SCHEMA: schema, WEB_BE_LEGACY_URL: 'http://127.0.0.1:1' } });
+    env: { ...process.env, ...testEnv, ...shared, DB_SCHEMA: schema } });
   console.log((integration.stdout + integration.stderr).split('\n').filter((line) => /^(---|ok|FAIL|PASS)/.test(line.trim())).join('\n'));
   scenarios++;
   if (integration.status !== 0) failures.push({ name: 'go integration tests (internal/member)' });
   const adonisLog = start('adonis', 'node', ['--import', 'ts-node-maintained/register/esm', 'bin/server.ts'], webBe,
     { ...testEnv, ...shared, PORT: String(ports.adonis), PGOPTIONS: `-c search_path=${schema}` });
   const goLog = start('go', resolve(root, 'bin/web-api'), [], root,
-    { ...testEnv, ...shared, PORT: String(ports.go), DB_SCHEMA: schema, WEB_BE_LEGACY_URL: `http://127.0.0.1:${ports.adonis}` });
+    { ...testEnv, ...shared, PORT: String(ports.go), DB_SCHEMA: schema });
   await waitFor(ports.adonis, adonisLog);
   await waitFor(ports.go, goLog);
 

@@ -2,15 +2,15 @@
 
 Agent contribution rules: [AGENTS.md](AGENTS.md). `CLAUDE.md` imports the same rules.
 
-The Go replacement for the AdonisJS public member API (`../kaderisasi-web-be`), on
-port **3333**. Routes move here group by group. Every route not ported yet is
-reverse-proxied unchanged to Adonis at `WEB_BE_LEGACY_URL`, so frontends keep one API
-origin throughout. Phases, compatibility rules, local running and deployment are in
-[docs/MIGRATION.md](docs/MIGRATION.md).
+The public member API on port **3333**: the Go replacement for the AdonisJS service
+`../kaderisasi-web-be`, serving every `/v2` route it had with the same HTTP contract.
+The migration phases, compatibility rules, known differences, local running and
+deployment are in [docs/MIGRATION.md](docs/MIGRATION.md).
 
 ## Local setup
 
-Required: Go **1.26.8**, sqlc **1.31.1**, Node **24** (runner, interop fixtures and contract checks).
+Required: Go **1.26.8** with CGO and libvips (`brew install go vips pkgconf`), sqlc **1.31.1**,
+Node **24** (runner, interop fixtures and contract checks).
 
 ```sh
 npm ci --prefix tests/interop
@@ -22,7 +22,6 @@ make test-contract   # differential check against Adonis web-be (owned test sche
 ## Running
 
 ```sh
-# kaderisasi-web-be on 3335, then:
 make run
 ```
 

@@ -1,12 +1,11 @@
 # Migration from Adonis web-be
 
-This service is replacing the AdonisJS public member API (`../kaderisasi-web-be`)
-route group by route group. It listens on port **3333** and answers the routes ported
-so far. Every other request is reverse-proxied unchanged to the Adonis service at
-`WEB_BE_LEGACY_URL`. Frontends keep a single API origin throughout the migration, and a
-route can be rolled back by unregistering it.
+This service replaced the AdonisJS public member API (`../kaderisasi-web-be`). It
+listens on port **3333** and serves every `/v2` route web-be had, with the same
+contract. During phases 0–6 it reverse-proxied unported routes to Adonis
+(`WEB_BE_LEGACY_URL`); phase 7 removed the proxy, so the variable is now ignored.
 
-HTTP, middleware and the proxy live in `internal/webapi`. The learner JWT lives in
+HTTP and middleware live in `internal/webapi`. The learner JWT lives in
 `internal/auth`, and sqlc queries in `database/queries` → `internal/dbgen`.
 
 ## Phases
@@ -20,7 +19,7 @@ HTTP, middleware and the proxy live in `internal/webapi`. The learner JWT lives 
 | 4 | Activity and club registrations | **Done**: covered by `scripts/contract-forms.mjs` |
 | 5 | Custom forms, sessions, responses, uploads | **Done**: `scripts/contract-forms.mjs` passes 260/260 together with phase 4 |
 | 6 | Courses and the remaining certificate routes | **Done**: `scripts/contract-courses.mjs` passes 181/181 |
-| 7 | Remove the proxy, retire the Adonis deployment | Pending |
+| 7 | Remove the proxy; native `404` for unknown routes | **Done**: `scripts/contract-routing.mjs` passes 25/25. Retiring the Adonis deployment is an ops step (below) |
 
 Every phase must pass the contract diff against Adonis for the routes it moves, plus
 `make check` and `make test-unit`. It also ports the matching web-be Japa specs.
@@ -96,17 +95,15 @@ The code exchange and ID-token checks are unit-tested against a fake Google
   `401 {"message":"UNAUTHORIZED"}`.
 - **CORS** (`config/cors.ts`: origin `*` with credentials, methods
   `GET,HEAD,POST,PUT,DELETE`, any requested header, max age 90). Go answers every
-  preflight (`OPTIONS` with `Origin`, always 204). On simple requests it adds headers
-  only to responses it produces itself, because proxied responses already carry
-  Adonis's headers.
+  preflight (`OPTIONS` with `Origin`, always 204) and adds the origin and credentials
+  headers to every other response.
 - **Request id**: a valid `X-Request-Id` (≤128 chars, `[A-Za-z0-9._:-]`) is kept,
   otherwise a UUID is issued. The id is forwarded to Adonis, which reuses it, and is sent
   back once.
-- **Logging**: `>=400` warns and `>=500` errors, with `request_id`, `actor_user_id` and
-  `proxied` fields. Successful requests log at debug level.
-- **Proxy**: method, path, query, body, cookies and headers are forwarded. The incoming
-  `X-Forwarded-For` chain is kept and the caller's address is appended. If Adonis is
-  unreachable the response is `502 {"message":"LEGACY_API_UNAVAILABLE"}`.
+- **Logging**: `>=400` warns and `>=500` errors, with `request_id` and `actor_user_id`
+  fields. Successful requests log at debug level.
+- **Proxy** (phases 0–6, removed in phase 7): method, path, query, body, cookies and
+  headers were forwarded unchanged to Adonis.
 
 ## Deliberate deviations (phase 1)
 
@@ -211,7 +208,20 @@ The code exchange and ID-token checks are unit-tested against a fake Google
   `code/:code/download`) return the stored snapshots (`buildIssuedResponseData`) and keep
   the issued-only, revoked (`410`) and replacement-code (`current_code`) rules. Malformed
   template snapshots fail with V8's `TypeError` message, as the uncaught Adonis error does.
-- With phase 6 every web-be route is served by Go; the proxy receives no known route.
+- With phase 6 every web-be route is served by Go.
+
+## Phase 7 notes
+
+- **Unknown routes** answer like Adonis's `E_ROUTE_NOT_FOUND`:
+  `404 {"message":"Cannot <METHOD>:<raw path>","name":"Exception","status":404}`, with CORS
+  headers, for any method on any path no route matches (including a known path with
+  another method; Go's `405` is never produced).
+- **Path matching** follows the Adonis router: one trailing slash is ignored
+  (`/v2/activities/` lists activities), nothing is cleaned or redirected, and an empty,
+  `.` or `..` segment can fill a route parameter (`/v2/activities//` asks for the slug `""`)
+  but never a literal segment (`/v2//activities` is a 404). Paths are case-sensitive.
+- `GET /health` answers `{"status":"ok"}`; `HEAD` is accepted wherever `GET` is.
+- CORS headers are now added to every response (there are no proxied responses left).
 
 ## Behaviour kept on purpose (looks odd, but clients depend on it)
 
@@ -239,16 +249,14 @@ behavior change for later; it needs the proxy's address range.
 
 ## Running locally
 
-Adonis has to move off 3333 while web-api takes that port:
-
 ```sh
-# kaderisasi-web-be
-PORT=3335 npm run dev
-# kaderisasi-web-be-go (reads ../env/test/web-be-test-env; WEB_BE_LEGACY_URL defaults to http://localhost:3335)
+# kaderisasi-web-be-go (reads ../env/test/web-be-test-env)
 make run
 ```
 
-`kaderisasi-web-fe` keeps using `http://localhost:3333/v2`.
+`kaderisasi-web-fe` keeps using `http://localhost:3333/v2`. Adonis web-be is no longer
+needed to run the site; `make test-contract` still starts it (on its own ports) as the
+reference while its checkout exists.
 
 ## Deployment (Coolify)
 
@@ -257,9 +265,11 @@ links libvips (CGO); the Dockerfile builds the same pinned, minimal libvips 8.18
 admin API.
 
 - `PORT=3333`, `HOST=0.0.0.0`; health check `GET /health`;
-- the web-be environment (`env/prod/web-be-prod-env`, including the `DRIVE_*` S3 keys), plus `WEB_BE_LEGACY_URL` set to
-  the Adonis service's internal URL;
-- the public web-be domain moved from the Adonis application to this one, while Adonis
-  stays reachable internally.
+- the web-be environment (`env/prod/web-be-prod-env`, including the `DRIVE_*` S3 keys);
+  `WEB_BE_LEGACY_URL` is no longer read and can be removed;
+- the public web-be domain moved from the Adonis application to this one.
 
-Rollback: point the domain back at the Adonis application. No data migration is involved.
+Rollback: point the domain back at the Adonis application. No data migration is
+involved, and credentials and stored data stay interoperable in both directions. Keep the
+Adonis application stopped but available for one release, then delete it and archive
+`kaderisasi-web-be`.

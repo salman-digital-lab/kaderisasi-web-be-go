@@ -64,7 +64,6 @@ func (s *Server) observe(next http.Handler) http.Handler {
 		w.Header().Set("X-Request-Id", id)
 		observed := &observation{}
 		r = r.WithContext(contextWithObservation(r.Context(), observed))
-		proxied := !s.Owned(r) && !isPreflight(r)
 		defer func() {
 			if recovered := recover(); recovered != nil {
 				if recovered == http.ErrAbortHandler {
@@ -81,7 +80,7 @@ func (s *Server) observe(next http.Handler) http.Handler {
 				status = http.StatusOK
 			}
 			attributes := []any{"request_id", id, "method", r.Method, "path", r.URL.RequestURI(), "status", status,
-				"duration_ms", float64(time.Since(started).Microseconds()) / 1000, "proxied", proxied}
+				"duration_ms", float64(time.Since(started).Microseconds()) / 1000}
 			if observed.actorID != 0 {
 				attributes = append(attributes, "actor_user_id", observed.actorID)
 			}
@@ -109,8 +108,7 @@ var corsMethods = []string{"GET", "HEAD", "POST", "PUT", "DELETE"}
 const corsMaxAge = "90"
 
 // cors reproduces @adonisjs/cors 2.2 for that config. Preflights are answered
-// here for every path; simple-request headers are added only to responses the
-// Go service produces, because proxied Adonis responses already carry them.
+// here for every path.
 func (s *Server) cors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
@@ -119,10 +117,8 @@ func (s *Server) cors(next http.Handler) http.Handler {
 			return
 		}
 		if r.Method != http.MethodOptions {
-			if s.Owned(r) {
-				w.Header().Set("Access-Control-Allow-Origin", origin)
-				w.Header().Set("Access-Control-Allow-Credentials", "true")
-			}
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
 			next.ServeHTTP(w, r)
 			return
 		}

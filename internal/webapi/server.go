@@ -1,7 +1,5 @@
-// Package webapi is the Go replacement for the AdonisJS public member API
-// (kaderisasi-web-be). Routes move here group by group; every request for a
-// route this package does not own yet is reverse-proxied unchanged to the
-// Adonis service at WEB_BE_LEGACY_URL. See docs/WEB_API.md.
+// Package webapi is the public member API that replaced the AdonisJS
+// kaderisasi-web-be service, keeping its HTTP contract (docs/MIGRATION.md).
 package webapi
 
 import (
@@ -10,7 +8,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
-	"net/http/httputil"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -41,13 +39,11 @@ type Server struct {
 	Now func() time.Time
 
 	mux      *http.ServeMux
-	proxy    *httputil.ReverseProxy
 	throttle *certificateThrottle
 }
 
 func (s *Server) Handler() http.Handler {
 	s.mux = http.NewServeMux()
-	s.proxy = newLegacyProxy(s.Config.LegacyURL, s.logger())
 	s.mux.HandleFunc("GET /health", func(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(w, http.StatusOK, struct {
 			Status string `json:"status"`
@@ -62,15 +58,59 @@ func (s *Server) Handler() http.Handler {
 	s.registerRegistrations()
 	s.registerForms()
 	s.registerCourses()
-	s.mux.Handle("/", s.proxy)
-	return s.observe(s.cors(s.mux))
+	s.mux.HandleFunc("/", routeNotFound)
+	return s.observe(s.cors(adonisPaths(s.mux)))
 }
 
-// Owned reports whether the Go service answers the request itself rather than
-// proxying it to Adonis.
-func (s *Server) Owned(r *http.Request) bool {
-	_, pattern := s.mux.Handler(r)
-	return pattern != "/"
+// rawPath is the request target's path exactly as the client sent it.
+func rawPath(r *http.Request) string {
+	path := r.RequestURI
+	if i := strings.IndexAny(path, "?#"); i >= 0 {
+		path = path[:i]
+	}
+	return path
+}
+
+// routeNotFound is Adonis's E_ROUTE_NOT_FOUND for any method and path no
+// route matches (debug stack frames are not reproduced).
+func routeNotFound(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusNotFound, struct {
+		Message string `json:"message"`
+		Name    string `json:"name"`
+		Status  int    `json:"status"`
+	}{"Cannot " + r.Method + ":" + rawPath(r), "Exception", http.StatusNotFound})
+}
+
+// adonisPaths matches paths the way the Adonis router does: one trailing
+// slash is ignored and nothing is cleaned, so an empty, "." or ".." segment
+// can still fill a route parameter but never a literal segment. net/http's
+// mux would clean and redirect such paths, so those segments are handed to
+// it with a prefix only wildcards match; handlers read parameters from the
+// raw request target (rawSegment).
+func adonisPaths(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		if len(path) > 1 && strings.HasSuffix(path, "/") {
+			path = path[:len(path)-1]
+		}
+		if path != "/" {
+			segments := strings.Split(strings.TrimPrefix(path, "/"), "/")
+			for i, segment := range segments {
+				if segment == "" || segment == "." || segment == ".." {
+					segments[i] = "\x01" + segment
+				}
+			}
+			path = "/" + strings.Join(segments, "/")
+		}
+		if path != r.URL.Path {
+			u := *r.URL
+			u.Path, u.RawPath = path, ""
+			r2 := r.Clone(r.Context())
+			r2.URL = &u
+			r = r2
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (s *Server) logger() *slog.Logger {

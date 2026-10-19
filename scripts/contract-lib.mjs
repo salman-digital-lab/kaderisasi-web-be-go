@@ -97,7 +97,7 @@ export async function withContract(name, { ports, env = {}, twin = false, adonis
       const adonisLog = start('adonis', 'node', ['--import', 'ts-node-maintained/register/esm', 'bin/server.ts'], webBe,
         { ...testEnv, ...shared, ...adonisEnv, PORT: String(ports.adonis), PGOPTIONS: `-c search_path=${schemas[0]}` });
       const goLog = start('go', resolve(root, 'bin/web-api'), [], root,
-        { ...testEnv, ...shared, ...goEnv, PORT: String(ports.go), DB_SCHEMA: schemas[schemas.length - 1], WEB_BE_LEGACY_URL: `http://127.0.0.1:${ports.adonis}` });
+        { ...testEnv, ...shared, ...goEnv, PORT: String(ports.go), DB_SCHEMA: schemas[schemas.length - 1] });
       await waitFor(ports.adonis, adonisLog);
       await waitFor(ports.go, goLog);
     };
