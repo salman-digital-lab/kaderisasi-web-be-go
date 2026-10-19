@@ -13,6 +13,7 @@ import (
 
 	"kaderisasi/web/internal/auth"
 	"kaderisasi/web/internal/catalog"
+	"kaderisasi/web/internal/certificate"
 	"kaderisasi/web/internal/dbgen"
 	"kaderisasi/web/internal/forms"
 	"kaderisasi/web/internal/js"
@@ -38,8 +39,11 @@ func (s *Server) registerForms() {
 func uncaught(w http.ResponseWriter, err error) {
 	name := "Error"
 	var pg *pgconn.PgError
+	var typeError *certificate.TypeError
 	if errors.As(err, &pg) {
 		name = "error" // node-postgres DatabaseError
+	} else if errors.As(err, &typeError) {
+		name = "TypeError"
 	}
 	writeJSON(w, http.StatusInternalServerError, member.KV("message", err.Error(), "name", name, "status", http.StatusInternalServerError))
 }

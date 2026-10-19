@@ -228,3 +228,6 @@ func prepareProfile(key string, v js.Value) any {
 	raw, _ := v.MarshalJSON()
 	return string(raw)
 }
+
+// Spread is `{ ...v }` for a parsed JSON value.
+func Spread(v js.Value) js.Value { return spread(v) }

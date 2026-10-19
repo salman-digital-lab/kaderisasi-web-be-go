@@ -75,7 +75,7 @@ func TestProxyForwardsUnownedRoutesUnchanged(t *testing.T) {
 		w.WriteHeader(422)
 		_, _ = w.Write([]byte(`{"errors":[{"message":"invalid"}]}`))
 	}))
-	req := httptest.NewRequest("PUT", "/v2/courses/abc/lessons/1/completion?x=1&y=%20", strings.NewReader(`{"a":1}`))
+	req := httptest.NewRequest("PUT", "/v2/unported/abc?x=1&y=%20", strings.NewReader(`{"a":1}`))
 	req.RemoteAddr = "10.0.0.9:5555"
 	req.Header.Set("Authorization", "Bearer abc")
 	req.Header.Set("Cookie", "token=t")
@@ -84,7 +84,7 @@ func TestProxyForwardsUnownedRoutesUnchanged(t *testing.T) {
 	req.Header.Set("Origin", "https://web.example")
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
-	want := seen{"PUT", "/v2/courses/abc/lessons/1/completion", "x=1&y=%20", `{"a":1}`, "Bearer abc", "token=t", "req-1", "203.0.113.7, 10.0.0.9"}
+	want := seen{"PUT", "/v2/unported/abc", "x=1&y=%20", `{"a":1}`, "Bearer abc", "token=t", "req-1", "203.0.113.7, 10.0.0.9"}
 	if got != want {
 		t.Fatalf("upstream saw %+v, want %+v", got, want)
 	}
@@ -153,7 +153,7 @@ func TestLegacyUnavailable(t *testing.T) {
 	s.Config.LegacyURL, _ = url.Parse("http://127.0.0.1:1")
 	h := s.Handler()
 	rec := httptest.NewRecorder()
-	h.ServeHTTP(rec, httptest.NewRequest("GET", "/v2/certificates/registrations/1", nil))
+	h.ServeHTTP(rec, httptest.NewRequest("GET", "/v2/unported", nil))
 	if rec.Code != 502 || strings.TrimSpace(rec.Body.String()) != `{"message":"LEGACY_API_UNAVAILABLE"}` {
 		t.Fatalf("got %d %s", rec.Code, rec.Body.String())
 	}

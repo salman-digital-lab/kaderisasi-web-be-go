@@ -23,6 +23,7 @@ check:
 	node --check scripts/sanitize-fixture.mjs
 	node --check scripts/contract-members.mjs
 	node --check scripts/contract-forms.mjs
+	node --check scripts/contract-courses.mjs
 	node --check scripts/webbe-validators-fixture.mjs
 	node --check scripts/filetype-fixture.mjs
 	node --check scripts/forms-fixture.mjs
@@ -40,6 +41,7 @@ test-contract:
 	node scripts/contract-public.mjs
 	node scripts/contract-members.mjs
 	node scripts/contract-forms.mjs
+	node scripts/contract-courses.mjs
 
 sqlc:
 	sqlc generate

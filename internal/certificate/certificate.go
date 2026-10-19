@@ -51,6 +51,20 @@ func field(v js.Value, key string) (js.Value, bool) {
 
 func nullish(v js.Value, ok bool) bool { return !ok || v.Kind == 'n' }
 
+// TypeError is a JavaScript TypeError raised while reading a malformed
+// snapshot, with V8's message.
+type TypeError struct{ Message string }
+
+func (e *TypeError) Error() string { return e.Message }
+
+func readError(v js.Value, key string) error {
+	kind := "undefined"
+	if v.Kind == 'n' {
+		kind = "null"
+	}
+	return &TypeError{"Cannot read properties of " + kind + " (reading '" + key + "')"}
+}
+
 // HasApproval is hasCertificateApproval.
 func HasApproval(issued dbgen.IssuedCertificate) (bool, error) {
 	template := parse(issued.TemplateSnapshot)
@@ -59,16 +73,19 @@ func HasApproval(issued dbgen.IssuedCertificate) (bool, error) {
 	}
 	data, ok := field(template, "template_data")
 	if nullish(data, ok) {
-		return false, errTypeError // undefined.elements
+		return false, readError(data, "elements")
 	}
 	elements, ok := field(data, "elements")
-	if !ok || elements.Kind != 'a' {
-		return false, errTypeError // elements.some is not a function
+	if nullish(elements, ok) {
+		return false, readError(elements, "some")
+	}
+	if elements.Kind != 'a' {
+		return false, &TypeError{"issued.templateSnapshot?.template_data.elements.some is not a function"}
 	}
 	required := false
 	for _, element := range elements.Items {
 		if element.Kind == 'n' {
-			return false, errTypeError
+			return false, readError(element, "type")
 		}
 		kind, _ := field(element, "type")
 		if kind.Kind != 's' || kind.String != "variable-text" {
@@ -79,7 +96,7 @@ func HasApproval(issued dbgen.IssuedCertificate) (bool, error) {
 			continue
 		}
 		if variable.Kind != 's' {
-			return false, errTypeError // variable.replace is not a function
+			return false, &TypeError{"element.variable?.replace is not a function"}
 		}
 		if js.Trim(strings.NewReplacer("{", "", "}", "").Replace(variable.String)) == "approval" {
 			required = true
@@ -232,4 +249,30 @@ func Verification(issued dbgen.IssuedCertificate, zone *time.Location) (member.O
 	o = put(o, "activity_date", v, ok)
 	return append(o, member.KV("issued_at", iso(issued.IssuedAt.Time, zone), "revoked_at", revokedAt(issued, zone),
 		"revoked_reason", issued.RevokedReason)...), nil
+}
+
+// Owner is buildIssuedResponseData: the stored snapshots plus the issuance,
+// returned to the certificate's owner for rendering.
+func Owner(issued dbgen.IssuedCertificate, zone *time.Location) (member.Object, error) {
+	s, err := responseData(issued)
+	if err != nil {
+		return nil, err
+	}
+	participant := member.Spread(s.participant)
+	if _, ok := participant.Fields["gender"]; !ok {
+		participant.Keys = append(participant.Keys, "gender")
+	}
+	participant.Fields["gender"] = s.gender
+	certificate := member.KV("id", issued.ID, "certificate_code", issued.CertificateCode, "registration_id", issued.RegistrationID,
+		"activity_id", issued.ActivityID, "template_id", issued.TemplateID, "issued_at", iso(issued.IssuedAt.Time, zone),
+		"revoked_at", revokedAt(issued, zone), "revoked_reason", issued.RevokedReason)
+	if approval := parse(issued.ApprovalSnapshot); approval.Truthy() {
+		public, _ := publicApproval(issued.ApprovalSnapshot)
+		certificate = append(certificate, member.Pair{Key: "approval", Value: public})
+	}
+	var template any = s.template
+	if issued.TemplateSnapshot == nil {
+		template = nil
+	}
+	return member.KV("activity", s.activity, "template", template, "participant", participant, "certificate", certificate), nil
 }

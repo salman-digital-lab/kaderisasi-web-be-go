@@ -245,7 +245,7 @@ SELECT c.id, c.title, c.summary, c.minimum_level,
   (SELECT count(*) FROM course_lessons l WHERE l.course_id = c.id AND l.deleted_at IS NULL)::bigint AS total_lessons,
   (SELECT count(*) FROM course_lessons l JOIN course_lesson_progress p ON p.lesson_id = l.id
     WHERE l.course_id = c.id AND l.deleted_at IS NULL AND p.user_id = $1::integer AND p.completed_at IS NOT NULL)::bigint AS completed_lessons,
-  r.id AS resume_lesson_id
+  COALESCE(r.id, 0)::integer AS resume_lesson_id -- 0: none (lesson ids are serial)
 FROM courses c LEFT JOIN LATERAL (SELECT l.id FROM course_lessons l JOIN course_lesson_progress p ON p.lesson_id = l.id
     WHERE l.course_id = c.id AND l.deleted_at IS NULL AND p.user_id = $1::integer ORDER BY p.last_visited_at DESC, p.id DESC LIMIT 1) r ON true
 WHERE c.status = 'published' AND c.minimum_level <= $2::integer AND c.title ILIKE $3::text
@@ -309,7 +309,7 @@ SELECT c.id, c.title, c.summary, c.minimum_level, c.description,
   (SELECT count(*) FROM course_lessons l WHERE l.course_id = c.id AND l.deleted_at IS NULL)::bigint AS total_lessons,
   (SELECT count(*) FROM course_lessons l JOIN course_lesson_progress p ON p.lesson_id = l.id
     WHERE l.course_id = c.id AND l.deleted_at IS NULL AND p.user_id = $1::integer AND p.completed_at IS NOT NULL)::bigint AS completed_lessons,
-  r.id AS resume_lesson_id
+  COALESCE(r.id, 0)::integer AS resume_lesson_id -- 0: none (lesson ids are serial)
 FROM courses c LEFT JOIN LATERAL (SELECT l.id FROM course_lessons l JOIN course_lesson_progress p ON p.lesson_id = l.id
     WHERE l.course_id = c.id AND l.deleted_at IS NULL AND p.user_id = $1::integer ORDER BY p.last_visited_at DESC, p.id DESC LIMIT 1) r ON true
 WHERE c.id = $2::integer AND c.status = 'published' AND c.minimum_level <= $3::integer LIMIT 1

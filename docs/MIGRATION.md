@@ -19,7 +19,7 @@ HTTP, middleware and the proxy live in `internal/webapi`. The learner JWT lives 
 | 3 | Profiles, picture, history, notifications, achievements, ruang-curhat, members/submit | **Done**: `scripts/contract-members.mjs` passes 180/180 (one key-order note, below) |
 | 4 | Activity and club registrations | **Done**: covered by `scripts/contract-forms.mjs` |
 | 5 | Custom forms, sessions, responses, uploads | **Done**: `scripts/contract-forms.mjs` passes 260/260 together with phase 4 |
-| 6 | Courses and the remaining certificate routes | Pending |
+| 6 | Courses and the remaining certificate routes | **Done**: `scripts/contract-courses.mjs` passes 181/181 |
 | 7 | Remove the proxy, retire the Adonis deployment | Pending |
 
 Every phase must pass the contract diff against Adonis for the routes it moves, plus
@@ -29,7 +29,7 @@ Every phase must pass the contract diff against Adonis for the routes it moves, 
 
 `make test-contract` runs `scripts/contract-auth.mjs` (phase 1),
 `scripts/contract-public.mjs` (phase 2), `scripts/contract-members.mjs` (phase 3) and
-`scripts/contract-forms.mjs` (phases 4 and 5) on the
+`scripts/contract-forms.mjs` (phases 4 and 5) and `scripts/contract-courses.mjs` (phase 6) on the
 shared harness in `scripts/contract-lib.mjs`.
 Each one does the following:
 
@@ -198,6 +198,20 @@ The code exchange and ID-token checks are unit-tested against a fake Google
 - **Known differences:** Adonis preloads a club registration's `club` and `roles`
   concurrently, so their key order varies; Go always writes `club` first. Uncaught errors
   answer with the same `message`, `name` and `status` but without debug `frames`.
+
+## Phase 6 notes
+
+- **Courses** keep `course_service.ts`'s queries (published, `minimum_level` against the
+  member's profile level, soft-deleted lessons and documents excluded), its pagination
+  (`page` ≤ 1,000,000, `per_page` ≤ 100, unescaped `ILIKE` search) and its
+  `course_lesson_progress` upsert. Course ids must match `^[1-9]\d*$` and fit an int4;
+  anything else is `404 COURSE_NOT_FOUND`. Documents stream from S3 as
+  `attachment; filename="materi.pdf"; filename*=UTF-8''<encodeURIComponent(name)>`.
+- **Owner certificate routes** (`registrations/:id`, `:id/download`, `code/:code/access`,
+  `code/:code/download`) return the stored snapshots (`buildIssuedResponseData`) and keep
+  the issued-only, revoked (`410`) and replacement-code (`current_code`) rules. Malformed
+  template snapshots fail with V8's `TypeError` message, as the uncaught Adonis error does.
+- With phase 6 every web-be route is served by Go; the proxy receives no known route.
 
 ## Behaviour kept on purpose (looks odd, but clients depend on it)
 
