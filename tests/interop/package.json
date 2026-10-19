@@ -7,6 +7,11 @@
     "@adonisjs/hash": "9.1.1",
     "@adonisjs/encryption": "6.0.2",
     "validator": "13.15.15",
-    "edge.js": "6.3.0"
+    "edge.js": "6.3.0",
+    "sanitize-html": "2.17.6",
+    "htmlparser2": "12.0.0",
+    "entities": "8.0.0",
+    "postcss": "8.5.19",
+    "launder": "1.7.1"
   }
 }

@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"strings"
 	"unicode/utf16"
+
+	"kaderisasi/web/internal/js"
 )
 
 // Issue is one entry of E_VALIDATION_ERROR.messages (SimpleErrorReporter).
@@ -85,10 +87,8 @@ func (r String) validate(field string, raw json.RawMessage) (string, *Issue) {
 	return value, nil
 }
 
-// TrimJS is String.prototype.trim: JavaScript whitespace and line terminators.
-func TrimJS(s string) string {
-	return strings.TrimFunc(s, func(r rune) bool { return r <= 0xFFFF && jsWhitespace(uint16(r)) })
-}
+// TrimJS is String.prototype.trim.
+func TrimJS(s string) string { return js.Trim(s) }
 
 func itoa(n int) string {
 	b, _ := json.Marshal(n)

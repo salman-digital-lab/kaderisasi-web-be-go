@@ -5,12 +5,11 @@ package member
 import (
 	"bytes"
 	"encoding/json"
-	"math"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
+
+	"kaderisasi/web/internal/js"
 )
 
 // Object is a JSON object that keeps its key order, as JavaScript objects
@@ -89,59 +88,18 @@ func Now() time.Time { return time.Now().Truncate(time.Millisecond) }
 
 func Timestamp(t time.Time) pgtype.Timestamptz { return pgtype.Timestamptz{Time: t, Valid: true} }
 
-// jsonb returns a jsonb column the way JSON.parse would see it (compacted;
-// JavaScript's reordering of integer-like keys is not reproduced).
+// jsonb returns a jsonb column as JSON.parse → JSON.stringify would emit it.
 func jsonb(raw []byte) any {
 	if raw == nil {
 		return nil
 	}
-	var b bytes.Buffer
-	if err := json.Compact(&b, raw); err != nil {
+	v, err := js.Parse(raw)
+	if err != nil {
 		return nil
 	}
-	return json.RawMessage(b.Bytes())
+	return v
 }
 
-func jsWhitespace(r rune) bool {
-	switch r {
-	case 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x20, 0xA0, 0x1680, 0x2028, 0x2029, 0x202F, 0x205F, 0x3000, 0xFEFF:
-		return true
-	}
-	return r >= 0x2000 && r <= 0x200A
-}
+func trimJS(s string) string { return js.Trim(s) }
 
-func trimJS(s string) string { return strings.TrimFunc(s, jsWhitespace) }
-
-// jsNumber is JavaScript's Number(string) for an already non-empty string.
-func jsNumber(s string) float64 {
-	s = trimJS(s)
-	if s == "" {
-		return 0
-	}
-	for prefix, base := range map[string]int{"0x": 16, "0X": 16, "0o": 8, "0O": 8, "0b": 2, "0B": 2} {
-		if strings.HasPrefix(s, prefix) {
-			n, err := strconv.ParseUint(s[2:], base, 64)
-			if err != nil || strings.ContainsAny(s[2:], "_+-") {
-				return math.NaN()
-			}
-			return float64(n)
-		}
-	}
-	switch strings.TrimLeft(s, "+-") {
-	case "Infinity":
-		return math.Inf(1)
-	}
-	for _, r := range s {
-		if !(r >= '0' && r <= '9') && !strings.ContainsRune("+-.eE", r) {
-			return math.NaN()
-		}
-	}
-	n, err := strconv.ParseFloat(s, 64)
-	if err != nil {
-		if errors, ok := err.(*strconv.NumError); ok && errors.Err == strconv.ErrRange {
-			return n
-		}
-		return math.NaN()
-	}
-	return n
-}
+func jsNumber(s string) float64 { return js.Number(s) }

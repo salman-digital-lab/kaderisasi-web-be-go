@@ -38,8 +38,9 @@ type Server struct {
 	// Now is the clock used for token checks; nil means time.Now.
 	Now func() time.Time
 
-	mux   *http.ServeMux
-	proxy *httputil.ReverseProxy
+	mux      *http.ServeMux
+	proxy    *httputil.ReverseProxy
+	throttle *certificateThrottle
 }
 
 func (s *Server) Handler() http.Handler {
@@ -52,6 +53,8 @@ func (s *Server) Handler() http.Handler {
 	})
 	// Route groups ported from web-be (see docs/MIGRATION.md).
 	s.registerAuth()
+	s.throttle = newCertificateThrottle(s.now)
+	s.registerCatalog()
 	s.mux.Handle("/", s.proxy)
 	return s.observe(s.cors(s.mux))
 }
@@ -91,7 +94,34 @@ func writeJSON(w http.ResponseWriter, status int, data any) {
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(status)
-	_, _ = w.Write(bytes.TrimRight(b.Bytes(), "\n"))
+	_, _ = w.Write(rawLineSeparators(bytes.TrimRight(b.Bytes(), "\n")))
+}
+
+// rawLineSeparators undoes encoding/json's \u2028 and \u2029 escapes, which
+// JSON.stringify does not produce.
+func rawLineSeparators(b []byte) []byte {
+	if !bytes.Contains(b, []byte(`\u202`)) {
+		return b
+	}
+	out := make([]byte, 0, len(b))
+	for i := 0; i < len(b); i++ {
+		if b[i] != '\\' || i+1 >= len(b) {
+			out = append(out, b[i])
+			continue
+		}
+		if b[i+1] == 'u' && i+5 < len(b) && (string(b[i+2:i+6]) == "2028" || string(b[i+2:i+6]) == "2029") {
+			if b[i+5] == '8' {
+				out = append(out, "\u2028"...)
+			} else {
+				out = append(out, "\u2029"...)
+			}
+			i += 5
+			continue
+		}
+		out = append(out, b[i], b[i+1])
+		i++
+	}
+	return out
 }
 
 type message struct {

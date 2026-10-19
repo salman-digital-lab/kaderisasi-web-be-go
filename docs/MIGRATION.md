@@ -15,7 +15,7 @@ HTTP, middleware and the proxy live in `internal/webapi`. The learner JWT lives 
 | --- | --- | --- |
 | 0 | Service, config, request id/logging, CORS, learner JWT, auth middleware, proxy, `/health` | **Done** |
 | 1 | `auth/*`: register, login, Google, check-email, forgot/reset password (SMTP mailer), logout | **Done**: `scripts/contract-auth.mjs` passes 47/47 |
-| 2 | Public reads: activities, categories, clubs, monthly achievements, certificate verify/show (with throttle) | Pending |
+| 2 | Public reads: activities, categories, clubs, monthly achievements, certificate verify/show (with throttle) | **Done**: `scripts/contract-public.mjs` passes 210/210, byte for byte |
 | 3 | Profiles, picture, history, notifications, achievements, ruang-curhat, members/submit | Pending |
 | 4 | Activity and club registrations | Pending |
 | 5 | Custom forms, sessions, responses, uploads | Pending |
@@ -27,7 +27,9 @@ Every phase must pass the contract diff against Adonis for the routes it moves, 
 
 ## Contract checks
 
-`make test-contract` (currently `scripts/contract-auth.mjs`) does the following:
+`make test-contract` runs `scripts/contract-auth.mjs` (phase 1) and
+`scripts/contract-public.mjs` (phase 2) on the shared harness in `scripts/contract-lib.mjs`.
+Each one does the following:
 
 1. Creates an owned schema `web_go_<run>` in the test database and migrates it with Ace
    from `../kaderisasi-admin-be`.
@@ -50,6 +52,17 @@ Phase 1 coverage:
 - tokens used across the two implementations;
 - recovery email headers and HTML;
 - reset links mailed by one side and accepted by the other.
+
+Phase 2 coverage: synthetic fixtures for activities, clubs (rich text, media, registration
+info and open/closed states), leadership roles, the monthly leaderboard and issued
+certificates, including malformed snapshots. Requests cover:
+- every pagination edge (0, negative, fractional, NaN, Infinity, repeated parameters);
+- search wildcards and filters that fail in PostgreSQL;
+- encoded route parameters;
+- ISO month forms;
+- the shared 30-per-minute certificate throttle.
+
+Responses are compared byte for byte, including key order and error text.
 
 Google sign-in is checked against Adonis for its validation and configuration answers.
 The code exchange and ID-token checks are unit-tested against a fake Google
@@ -109,7 +122,35 @@ The code exchange and ID-token checks are unit-tested against a fake Google
 - **Unicode edge cases:** a lone UTF-16 surrogate, and the few characters whose lower-case
   form differs between JavaScript and Go (e.g. `İ`).
 
+## Phase 2 notes
+
+- **Rich text:** `internal/richtext` ports htmlparser2 12 (tokenizer, parser, entity
+  decoding), sanitize-html 2.17.6 with web-be's allowlist, launder's `naughtyHref`, and
+  the postcss rules the `style` filter relies on. `TestSanitizeMatchesSanitizeHTML`
+  compares it byte for byte with the Node library on handwritten cases plus 20,000
+  generated inputs. Set `RICHTEXT_FUZZ=<n>` for a wider run with a random seed
+  (200,000 inputs matched). The CSS emulation is not a full postcss: exotic style
+  values (nested blocks mixed with declarations, comments inside words) could still
+  differ. Only the `text-align` keyword values are ever kept.
+- **Database error text** now matches knex (`<sql with $n> - <PostgreSQL message>`) for
+  the phase 2 queries, including invalid ids and filters and a negative `per_page`. The
+  phase 1 note about pgx error text still applies to the auth routes.
+- **Route parameters** are read undecoded from the request target, as Adonis does
+  (`%20SAL-0002` is not a valid code; `slug-with-%C3%BC` does not match `slug-with-ü`).
+- **`month`** (monthly leaderboard) supports Luxon's common ISO forms: calendar,
+  ordinal and week dates, an optional time, and `Z`/offset. Rarer Luxon inputs are
+  treated as invalid, which (like Adonis) queries `month IS NULL`.
+- **Repeated `category` / `club_id`** query parameters use the first value; knex would
+  build an array comparison. The frontend never repeats them.
+- **Throttle:** the same per-process buckets keyed by `request.ip()` (proxy-addr trusting
+  loopback only), shared by both certificate routes. Behind Coolify's proxy every
+  client still shares one bucket, as with Adonis today.
+
 ## Behaviour kept on purpose (looks odd, but clients depend on it)
+
+- `GET /v2/activities` answers with the key `messages` (not `message`).
+- Club descriptions and registration info are sanitized; activity descriptions are not.
+- The default monthly leaderboard queries today's date, not the first of the month.
 
 - Auth validation failures answer **500**, with `{message: <first message>, error: [...]}`.
   `forgot-password` answers `{message: "GENERAL_ERROR", error: "Validation failure"}`.
@@ -125,8 +166,9 @@ The code exchange and ID-token checks are unit-tested against a fake Google
 Adonis trusts `X-Forwarded-For` only from loopback (its default `trustProxy`). Behind
 Coolify's proxy, web-be already sees the proxy's address as `request.ip()`, so the
 public certificate throttle is effectively shared across clients today. Routing through
-web-api keeps that behavior. Phase 2 moves the throttle into Go and should key it on the
-real client address.
+web-api keeps that behavior. Phase 2 moved the throttle into Go with the same keying.
+Making it per client (trusting the Coolify proxy's `X-Forwarded-For`) is a deliberate
+behavior change for later; it needs the proxy's address range.
 
 ## Running locally
 

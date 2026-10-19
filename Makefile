@@ -18,6 +18,9 @@ check:
 	node --check scripts/vine-fixture.mjs
 	node --check scripts/edge-fixture.mjs
 	node --check scripts/contract-auth.mjs
+	node --check scripts/contract-lib.mjs
+	node --check scripts/contract-public.mjs
+	node --check scripts/sanitize-fixture.mjs
 	go vet -tags=integration ./...
 
 # Needs Node and `npm ci --prefix tests/interop` for the Adonis token fixture.
@@ -27,6 +30,7 @@ test-unit:
 # Differential check against Adonis web-be in an owned schema (docs/MIGRATION.md).
 test-contract:
 	node scripts/contract-auth.mjs
+	node scripts/contract-public.mjs
 
 sqlc:
 	sqlc generate
