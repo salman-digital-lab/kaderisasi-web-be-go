@@ -20,6 +20,7 @@ type Object struct {
 	ContentType  string
 	CacheControl string
 	PublicRead   bool
+	Private      bool // sends ACL: private explicitly
 }
 
 type Store interface {
@@ -46,6 +47,9 @@ func (s *S3) Put(ctx context.Context, key string, data []byte, o Object) error {
 	}
 	if o.CacheControl != "" {
 		input.CacheControl = aws.String(o.CacheControl)
+	}
+	if o.Private {
+		input.ACL = types.ObjectCannedACLPrivate
 	}
 	if o.PublicRead {
 		input.ACL = types.ObjectCannedACLPublicRead

@@ -11,7 +11,7 @@ SELECT * FROM custom_forms WHERE id = CAST(@id::text AS integer) LIMIT 1 FOR SHA
 SELECT * FROM custom_forms WHERE id = @id::integer LIMIT 1 FOR UPDATE;
 
 -- name: StandaloneFormForUpdate :one
-SELECT * FROM custom_forms WHERE id = @id::integer AND feature_type = 'independent_form' LIMIT 1 FOR UPDATE;
+SELECT * FROM custom_forms WHERE id = CAST(@id::text AS integer) AND feature_type = 'independent_form' LIMIT 1 FOR UPDATE;
 
 -- name: IndependentForm :one
 SELECT * FROM custom_forms WHERE id = CAST(@id::text AS integer) AND feature_type = 'independent_form' LIMIT 1;
@@ -75,7 +75,7 @@ ON CONFLICT (id) DO NOTHING RETURNING *;
 SELECT id FROM custom_form_attachments WHERE storage_key = @storage_key::text LIMIT 1;
 
 -- name: UnclaimedSessionAttachmentForUpdate :one
-SELECT * FROM custom_form_attachments WHERE id = @id::uuid AND session_id = @session_id::uuid AND claimed_at IS NULL LIMIT 1 FOR UPDATE;
+SELECT * FROM custom_form_attachments WHERE id = CAST(@id::text AS uuid) AND session_id = @session_id::uuid AND claimed_at IS NULL LIMIT 1 FOR UPDATE;
 
 -- name: DeleteAttachment :exec
 DELETE FROM custom_form_attachments WHERE id = @id::uuid;

@@ -134,3 +134,12 @@ func (s File) validate(f *field) (js.Value, bool) {
 	}
 	return js.Value{}, false
 }
+
+// Valid is MultipartFile#isValid after validating with the rule's options;
+// u itself is not modified.
+func (s File) Valid(u *Upload) bool {
+	c := *u
+	c.Errors = append([]FileError(nil), u.Errors...)
+	s.check(&c)
+	return len(c.Errors) == 0
+}

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"io"
 	"mime"
-	"mime/multipart"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -178,6 +177,80 @@ func emptyToNull(v js.Value) js.Value {
 	return v
 }
 
+// Content-Disposition parameters as @poppinss/multiparty reads them.
+var (
+	filenameParam = regexp.MustCompile("(?i)\\bfilename=(?:\"(.*?)\"|([!#$%&'*+.0-9A-Z^_`a-z|~-]+))($|; )")
+	filenameStar  = regexp.MustCompile(`(?i)\bfilename\*=utf-8''(.*?)($|; )`)
+	nameParam     = regexp.MustCompile("(?i)\\bname=(?:\"([^\"]+)\"|([!#$%&'*+.0-9A-Z^_`a-z|~-]+))")
+	htmlCharCode  = regexp.MustCompile(`&#([\d]{4});`)
+	quotedEscapes = regexp.MustCompile(`%22|\\"`)
+)
+
+// partFilename is multiparty's parseFilename; ok=false means no filename
+// (the part is a field).
+func partFilename(header string) (string, bool) {
+	var name string
+	if m := filenameParam.FindStringSubmatch(header); m != nil {
+		name = m[1] + m[2]
+	} else if m := filenameStar.FindStringSubmatch(header); m != nil {
+		decoded, err := url.PathUnescape(m[1])
+		if err != nil {
+			decoded = m[1]
+		}
+		name = decoded
+	} else {
+		return "", false
+	}
+	name = quotedEscapes.ReplaceAllString(name, `"`)
+	name = htmlCharCode.ReplaceAllStringFunc(name, func(ref string) string {
+		code, _ := strconv.Atoi(ref[2:6])
+		return string(rune(code))
+	})
+	return name[strings.LastIndex(name, `\`)+1:], true
+}
+
+type rawPart struct {
+	headers map[string]string
+	data    []byte
+}
+
+// splitMultipart splits a multipart body on its boundary. Header names are
+// lower-cased; values keep everything after the colon and leading spaces.
+func splitMultipart(body []byte, boundary string) ([]rawPart, error) {
+	delimiter := []byte("--" + boundary)
+	start := bytes.Index(body, delimiter)
+	if start < 0 {
+		return nil, errors.New("Part terminated early due to unexpected end of multipart data")
+	}
+	rest := body[start+len(delimiter):]
+	var parts []rawPart
+	for {
+		if bytes.HasPrefix(rest, []byte("--")) {
+			return parts, nil
+		}
+		rest = bytes.TrimPrefix(rest, []byte("\r\n"))
+		headerEnd := bytes.Index(rest, []byte("\r\n\r\n"))
+		if headerEnd < 0 {
+			return nil, errors.New("Part terminated early due to unexpected end of multipart data")
+		}
+		headers := map[string]string{}
+		for _, line := range strings.Split(string(rest[:headerEnd]), "\r\n") {
+			key, value, ok := strings.Cut(line, ":")
+			if !ok {
+				continue
+			}
+			headers[strings.ToLower(key)] = strings.TrimLeft(value, " \t")
+		}
+		rest = rest[headerEnd+4:]
+		end := bytes.Index(rest, append([]byte("\r\n"), delimiter...))
+		if end < 0 {
+			return nil, errors.New("Part terminated early due to unexpected end of multipart data")
+		}
+		parts = append(parts, rawPart{headers, rest[:end]})
+		rest = rest[end+2+len(delimiter):]
+	}
+}
+
 // parseMultipart is the bodyparser's multipart handling with autoProcess:
 // fields (empty strings become null) and files with their detected type.
 // Files appear as Kind 'F' values so request.validateUsing sees both.
@@ -187,39 +260,37 @@ func parseMultipart(r *http.Request) (js.Value, error) {
 	if err != nil || params["boundary"] == "" {
 		return out, &bodyError{http.StatusBadRequest, "Exception", "Invalid multipart request"}
 	}
-	reader := multipart.NewReader(http.MaxBytesReader(nil, r.Body, multipartLimit), params["boundary"])
-	for {
-		part, err := reader.NextPart()
-		if err == io.EOF {
-			break
+	body, err := io.ReadAll(http.MaxBytesReader(nil, r.Body, multipartLimit))
+	var tooLarge *http.MaxBytesError
+	if errors.As(err, &tooLarge) {
+		return out, &bodyError{http.StatusRequestEntityTooLarge, "Exception", "request entity too large"}
+	}
+	if err != nil {
+		return out, &bodyError{http.StatusBadRequest, "Exception", err.Error()}
+	}
+	parts, err := splitMultipart(body, params["boundary"])
+	if err != nil {
+		return out, &bodyError{http.StatusBadRequest, "Exception", err.Error()}
+	}
+	for _, part := range parts {
+		disposition := part.headers["content-disposition"]
+		name := ""
+		if m := nameParam.FindStringSubmatch(disposition); m != nil {
+			name = m[1] + m[2]
 		}
-		var tooLarge *http.MaxBytesError
-		if errors.As(err, &tooLarge) {
-			return out, &bodyError{http.StatusRequestEntityTooLarge, "Exception", "request entity too large"}
-		}
-		if err != nil {
-			return out, &bodyError{http.StatusBadRequest, "Exception", err.Error()}
-		}
-		data, err := io.ReadAll(part)
-		if errors.As(err, &tooLarge) {
-			return out, &bodyError{http.StatusRequestEntityTooLarge, "Exception", "request entity too large"}
-		}
-		if err != nil {
-			return out, &bodyError{http.StatusBadRequest, "Exception", err.Error()}
-		}
-		name := part.FormName()
-		if part.FileName() == "" {
+		filename, isFile := partFilename(disposition)
+		if !isFile {
 			var item js.Value
-			if len(data) == 0 {
+			if len(part.data) == 0 {
 				item = js.Value{Kind: 'n'}
 			} else {
-				item = js.Value{Kind: 's', String: string(data)}
+				item = js.Value{Kind: 's', String: string(part.data)}
 			}
 			put(&out, name, item)
 			continue
 		}
-		upload := &vine.Upload{FieldName: name, ClientName: part.FileName(), ContentType: part.Header.Get("Content-Type"), Data: data}
-		if t := filetype.ForUpload(upload.ClientName, upload.ContentType, data); t != nil {
+		upload := &vine.Upload{FieldName: name, ClientName: filename, ContentType: part.headers["content-type"], Data: part.data}
+		if t := filetype.ForUpload(upload.ClientName, upload.ContentType, part.data); t != nil {
 			upload.Extname, upload.Type, upload.Subtype, upload.HasExtname = t.Ext, t.Type, t.Subtype, true
 		}
 		put(&out, name, js.Value{Kind: 'F', File: upload})

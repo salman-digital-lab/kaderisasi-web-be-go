@@ -380,3 +380,30 @@ func Validate(schema, submission js.Value) (valid bool, data js.Value, errs []Su
 }
 
 var _ = strconv.Itoa
+
+// StandaloneSchema is submitStandalone's validationSchema: identity sections
+// (section_name "profile_data") are validated like any other section.
+func StandaloneSchema(schema js.Value) js.Value {
+	sections, ok := get(schema, "fields")
+	if !ok || sections.Kind != 'a' {
+		return schema
+	}
+	renamed := js.Value{Kind: 'a', Items: make([]js.Value, len(sections.Items))}
+	for i, section := range sections.Items {
+		if name, _ := get(section, "section_name"); name.Kind == 's' && name.String == "profile_data" {
+			copy := js.Value{Kind: 'o', Keys: section.Keys, Fields: map[string]js.Value{}}
+			for k, v := range section.Fields {
+				copy.Fields[k] = v
+			}
+			copy.Fields["section_name"] = js.Value{Kind: 's', String: "Data diri"}
+			section = copy
+		}
+		renamed.Items[i] = section
+	}
+	out := js.Value{Kind: 'o', Keys: schema.Keys, Fields: map[string]js.Value{}}
+	for k, v := range schema.Fields {
+		out.Fields[k] = v
+	}
+	out.Fields["fields"] = renamed
+	return out
+}

@@ -36,7 +36,7 @@ RUN go mod download && go mod verify
 COPY cmd ./cmd
 COPY internal ./internal
 COPY scripts/crypto-fixture.cjs scripts/vine-fixture.mjs scripts/edge-fixture.mjs scripts/sanitize-fixture.mjs \
-    scripts/filetype-fixture.mjs scripts/collate-fixture.mjs scripts/pdf-fixture.mjs ./scripts/
+    scripts/filetype-fixture.mjs scripts/collate-fixture.mjs scripts/pdf-fixture.mjs scripts/forms-fixture.mjs ./scripts/
 COPY --from=interop /usr/local/bin/node /usr/local/bin/node
 COPY --from=interop /interop ./tests/interop
 RUN go vet ./... && go test -count=1 -timeout=10m ./... \

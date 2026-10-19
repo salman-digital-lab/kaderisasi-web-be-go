@@ -34,10 +34,20 @@ func rawSegment(r *http.Request, index int) string {
 func knexError(sql string, err error) error {
 	var pg *pgconn.PgError
 	if errors.As(err, &pg) {
-		return errors.New(sql + " - " + pg.Message)
+		return &dbError{sql + " - " + pg.Message, pg}
 	}
 	return err
 }
+
+// dbError is a knex query error: its message, and the driver error (whose
+// JavaScript name is "error").
+type dbError struct {
+	message string
+	pg      *pgconn.PgError
+}
+
+func (e *dbError) Error() string { return e.message }
+func (e *dbError) Unwrap() error { return e.pg }
 
 // placeholders numbers knex bindings in order.
 type placeholders struct{ n int }

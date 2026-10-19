@@ -17,8 +17,8 @@ HTTP, middleware and the proxy live in `internal/webapi`. The learner JWT lives 
 | 1 | `auth/*`: register, login, Google, check-email, forgot/reset password (SMTP mailer), logout | **Done**: `scripts/contract-auth.mjs` passes 47/47 |
 | 2 | Public reads: activities, categories, clubs, monthly achievements, certificate verify/show (with throttle) | **Done**: `scripts/contract-public.mjs` passes 210/210, byte for byte |
 | 3 | Profiles, picture, history, notifications, achievements, ruang-curhat, members/submit | **Done**: `scripts/contract-members.mjs` passes 180/180 (one key-order note, below) |
-| 4 | Activity and club registrations | Pending |
-| 5 | Custom forms, sessions, responses, uploads | Pending |
+| 4 | Activity and club registrations | **Done**: covered by `scripts/contract-forms.mjs` |
+| 5 | Custom forms, sessions, responses, uploads | **Done**: `scripts/contract-forms.mjs` passes 260/260 together with phase 4 |
 | 6 | Courses and the remaining certificate routes | Pending |
 | 7 | Remove the proxy, retire the Adonis deployment | Pending |
 
@@ -28,7 +28,8 @@ Every phase must pass the contract diff against Adonis for the routes it moves, 
 ## Contract checks
 
 `make test-contract` runs `scripts/contract-auth.mjs` (phase 1),
-`scripts/contract-public.mjs` (phase 2) and `scripts/contract-members.mjs` (phase 3) on the
+`scripts/contract-public.mjs` (phase 2), `scripts/contract-members.mjs` (phase 3) and
+`scripts/contract-forms.mjs` (phases 4 and 5) on the
 shared harness in `scripts/contract-lib.mjs`.
 Each one does the following:
 
@@ -170,6 +171,33 @@ The code exchange and ID-token checks are unit-tested against a fake Google
   - Responses where Adonis serializes `error.stack` or framework 500 frames carry the
     same status and message without stack text.
   - V8's legacy (non-ISO) `Date` parsing is supported for the common forms only.
+
+## Phase 4 and 5 notes
+
+- **Registrations** keep web-be's transactions and row locks (activity `FOR UPDATE` on guest
+  and form registration, registration `FOR UPDATE` on questionnaire edits and club
+  cancellation, form `FOR UPDATE` before a club registration). A response returned inside a
+  transaction still commits it, as with `db.transaction`. Club unique violations answer
+  `409 ALREADY_REGISTERED`.
+- **Forms** (`internal/forms`): submission validation, routing, `schemaHash` (ICU collation
+  via `golang.org/x/text/collate`) and the attachment claim rules are ported and fuzzed
+  against web-be's own modules (`scripts/forms-fixture.mjs`, `scripts/collate-fixture.mjs`).
+  Standalone submissions validate `profile_data` sections like any other section.
+- **Uploads**: `processFormFile` is ported. PDFs are checked by `internal/pdfcheck`, a
+  lenient structural reader matched against pdf-lib (`scripts/pdf-fixture.mjs`); it is not a
+  full PDF parser, so unusual files could still be judged differently. Images are converted
+  with govips (2400×2400 inside, WebP q85): dimensions match sharp, bytes and sizes do not.
+  Objects are written with `ACL: private` and `Cache-Control: private, no-store` under
+  `custom-forms/<form id>/<uuid>.<ext>`, and orphaned objects are removed as in web-be.
+- **Multipart** parsing follows `@poppinss/multiparty`: `name`/`filename` come from its
+  `Content-Disposition` regexes (control characters allowed, `%22`/`\"` and `&#NNNN;`
+  decoded, text after the last backslash). Go's `mime/multipart` is not used because it
+  rejects such headers and strips directories from file names.
+- **Session tokens** in the harness are random per server, so requests that carry one are
+  sent with the token each server issued.
+- **Known differences:** Adonis preloads a club registration's `club` and `roles`
+  concurrently, so their key order varies; Go always writes `club` first. Uncaught errors
+  answer with the same `message`, `name` and `status` but without debug `frames`.
 
 ## Behaviour kept on purpose (looks odd, but clients depend on it)
 

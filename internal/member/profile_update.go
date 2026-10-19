@@ -71,8 +71,8 @@ func merge(base, over js.Value) js.Value {
 	return out
 }
 
-// valueEqual is fast-deep-equal on parsed JSON values (key order ignored).
-func valueEqual(a, b js.Value) bool {
+// ValueEqual is fast-deep-equal on parsed JSON values (key order ignored).
+func ValueEqual(a, b js.Value) bool {
 	if a.Kind != b.Kind {
 		return false
 	}
@@ -90,7 +90,7 @@ func valueEqual(a, b js.Value) bool {
 			return false
 		}
 		for i := range a.Items {
-			if !valueEqual(a.Items[i], b.Items[i]) {
+			if !ValueEqual(a.Items[i], b.Items[i]) {
 				return false
 			}
 		}
@@ -101,7 +101,7 @@ func valueEqual(a, b js.Value) bool {
 		}
 		for _, k := range a.Keys {
 			other, ok := b.Fields[k]
-			if !ok || !valueEqual(a.Fields[k], other) {
+			if !ok || !ValueEqual(a.Fields[k], other) {
 				return false
 			}
 		}
@@ -175,7 +175,7 @@ func UpdateProfile(ctx context.Context, db dbgen.DBTX, profile dbgen.Profile, pa
 		v := updates.Fields[k]
 		old, _ := original.Get(k)
 		// birth_date is a JavaScript Date before the merge, so any value differs.
-		if k == "birth_date" || !valueEqual(old, v) {
+		if k == "birth_date" || !ValueEqual(old, v) {
 			dirty[k] = v
 		}
 		current = current.Set(k, v)

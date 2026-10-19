@@ -47,8 +47,8 @@ func ProcessFile(input []byte, s FileSettings) (Processed, error) {
 // OriginalName is the upload's display name: the basename without control
 // characters, at most 200 UTF-16 units, or "berkas".
 func OriginalName(clientName string) string {
-	base := clientName
-	if i := strings.LastIndexAny(base, "/"); i >= 0 {
+	base := strings.TrimRight(clientName, "/") // path.basename ignores trailing separators
+	if i := strings.LastIndex(base, "/"); i >= 0 {
 		base = base[i+1:]
 	}
 	var kept []rune

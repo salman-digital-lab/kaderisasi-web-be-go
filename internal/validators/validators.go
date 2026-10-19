@@ -201,3 +201,15 @@ var All = map[string]vine.Obj{
 	"course_validator.courseCompletionValidator":                  CourseCompletion,
 	"profile_validator.imageValidator":                            Image,
 }
+
+// FormSubmission and FormSession are form_responses_controller.ts's
+// submissionValidator and sessionValidator.
+var FormSubmission = vine.Obj{Props: []vine.Prop{
+	{Name: "session_token", Schema: vine.Str{Regex: regexp.MustCompile(`^[a-f0-9]{64}$`)}},
+	{Name: "answers", Schema: vine.Rec{Of: func() vine.Any {
+		a := vine.Any{}
+		a.Optional, a.Nullable = true, true
+		return a
+	}()}}}}
+
+var FormSession = vine.Obj{Props: []vine.Prop{{Name: "schema_hash", Schema: vine.Str{Regex: regexp.MustCompile(`^[a-f0-9]{64}$`)}}}}

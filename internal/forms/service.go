@@ -159,6 +159,15 @@ func CreateSession(ctx context.Context, q *dbgen.Queries, f dbgen.CustomForm, us
 	return token, hash, err
 }
 
+// ParseUUID is a uuid column value.
+func ParseUUID(s string) pgtype.UUID { return pgUUID(s) }
+
+// UUIDString formats a uuid column value.
+func UUIDString(u pgtype.UUID) string {
+	b := u.Bytes
+	return fmt.Sprintf("%x-%x-%x-%x-%x", b[:4], b[4:6], b[6:8], b[8:10], b[10:])
+}
+
 func pgUUID(s string) pgtype.UUID {
 	var u pgtype.UUID
 	_ = u.Scan(s)
@@ -269,7 +278,7 @@ func Claim(ctx context.Context, q *dbgen.Queries, f dbgen.CustomForm, token *str
 	if len(fields) == 0 && !hasToken {
 		return nil
 	}
-	if !hasToken && previous == nil {
+	if !hasToken && (previous == nil || !previous.Truthy()) {
 		return fail(422, "INVALID_FORM_SESSION")
 	}
 	var session *dbgen.CustomFormSession

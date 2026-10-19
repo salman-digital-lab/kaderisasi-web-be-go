@@ -933,10 +933,10 @@ func (q *Queries) SetQuestionnaireAnswer(ctx context.Context, arg SetQuestionnai
 }
 
 const standaloneFormForUpdate = `-- name: StandaloneFormForUpdate :one
-SELECT id, form_name, form_description, feature_id, form_schema, is_active, created_at, updated_at, feature_type, post_submission_info FROM custom_forms WHERE id = $1::integer AND feature_type = 'independent_form' LIMIT 1 FOR UPDATE
+SELECT id, form_name, form_description, feature_id, form_schema, is_active, created_at, updated_at, feature_type, post_submission_info FROM custom_forms WHERE id = CAST($1::text AS integer) AND feature_type = 'independent_form' LIMIT 1 FOR UPDATE
 `
 
-func (q *Queries) StandaloneFormForUpdate(ctx context.Context, id int32) (CustomForm, error) {
+func (q *Queries) StandaloneFormForUpdate(ctx context.Context, id string) (CustomForm, error) {
 	row := q.db.QueryRow(ctx, standaloneFormForUpdate, id)
 	var i CustomForm
 	err := row.Scan(
@@ -999,11 +999,11 @@ func (q *Queries) UnclaimedAttachmentsForUpdate(ctx context.Context, arg Unclaim
 }
 
 const unclaimedSessionAttachmentForUpdate = `-- name: UnclaimedSessionAttachmentForUpdate :one
-SELECT id, session_id, field_key, storage_key, original_name, download_name, mime_type, size_bytes, source_size_bytes, width, height, claimed_at, created_at FROM custom_form_attachments WHERE id = $1::uuid AND session_id = $2::uuid AND claimed_at IS NULL LIMIT 1 FOR UPDATE
+SELECT id, session_id, field_key, storage_key, original_name, download_name, mime_type, size_bytes, source_size_bytes, width, height, claimed_at, created_at FROM custom_form_attachments WHERE id = CAST($1::text AS uuid) AND session_id = $2::uuid AND claimed_at IS NULL LIMIT 1 FOR UPDATE
 `
 
 type UnclaimedSessionAttachmentForUpdateParams struct {
-	ID        pgtype.UUID `json:"id"`
+	ID        string      `json:"id"`
 	SessionID pgtype.UUID `json:"session_id"`
 }
 

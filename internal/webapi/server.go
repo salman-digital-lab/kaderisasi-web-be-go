@@ -59,6 +59,8 @@ func (s *Server) Handler() http.Handler {
 	s.registerCatalog()
 	s.registerProfiles()
 	s.registerMember()
+	s.registerRegistrations()
+	s.registerForms()
 	s.mux.Handle("/", s.proxy)
 	return s.observe(s.cors(s.mux))
 }

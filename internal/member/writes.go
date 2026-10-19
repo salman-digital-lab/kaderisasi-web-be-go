@@ -28,7 +28,7 @@ func SaveAchievement(ctx context.Context, db dbgen.DBTX, row dbgen.Achievement, 
 		raw, _ := marshal(c.Value)
 		next, _ := js.Parse(raw)
 		old, _ := original.Get(c.Key)
-		if !valueEqual(old, next) {
+		if !ValueEqual(old, next) {
 			dirty[c.Key] = prepareText(next)
 		}
 		current = current.Set(c.Key, c.Value)
