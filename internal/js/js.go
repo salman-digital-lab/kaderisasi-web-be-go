@@ -150,6 +150,8 @@ type Value struct {
 	Items  []Value
 	Keys   []string
 	Fields map[string]Value
+	// File is set for Kind 'F': an uploaded multipart file (not JSON).
+	File any
 }
 
 // Parse is JSON.parse into an order-preserving value.
@@ -252,7 +254,7 @@ func (v Value) Get(key string) (Value, bool) {
 // Truthy is JavaScript truthiness.
 func (v Value) Truthy() bool {
 	switch v.Kind {
-	case 'n':
+	case 0, 'n': // undefined, null
 		return false
 	case 'b':
 		return v.Bool

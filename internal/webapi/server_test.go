@@ -153,7 +153,7 @@ func TestLegacyUnavailable(t *testing.T) {
 	s.Config.LegacyURL, _ = url.Parse("http://127.0.0.1:1")
 	h := s.Handler()
 	rec := httptest.NewRecorder()
-	h.ServeHTTP(rec, httptest.NewRequest("GET", "/v2/profiles", nil))
+	h.ServeHTTP(rec, httptest.NewRequest("GET", "/v2/club-registrations/my-registrations", nil))
 	if rec.Code != 502 || strings.TrimSpace(rec.Body.String()) != `{"message":"LEGACY_API_UNAVAILABLE"}` {
 		t.Fatalf("got %d %s", rec.Code, rec.Body.String())
 	}

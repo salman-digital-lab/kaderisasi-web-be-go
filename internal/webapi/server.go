@@ -19,6 +19,7 @@ import (
 	"kaderisasi/web/internal/dbgen"
 	"kaderisasi/web/internal/google"
 	"kaderisasi/web/internal/mail"
+	"kaderisasi/web/internal/storage"
 )
 
 // UserStore loads the learner a token names, like the Adonis session user
@@ -28,10 +29,11 @@ type UserStore interface {
 }
 
 type Server struct {
-	Config config.Config
-	Users  UserStore
-	Pool   *pgxpool.Pool
-	Mail   mail.Sender
+	Config  config.Config
+	Users   UserStore
+	Pool    *pgxpool.Pool
+	Mail    mail.Sender
+	Storage storage.Store
 	// Google is nil when Google sign-in is not configured.
 	Google *google.Client
 	Logger *slog.Logger
@@ -55,6 +57,8 @@ func (s *Server) Handler() http.Handler {
 	s.registerAuth()
 	s.throttle = newCertificateThrottle(s.now)
 	s.registerCatalog()
+	s.registerProfiles()
+	s.registerMember()
 	s.mux.Handle("/", s.proxy)
 	return s.observe(s.cors(s.mux))
 }

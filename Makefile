@@ -21,9 +21,15 @@ check:
 	node --check scripts/contract-lib.mjs
 	node --check scripts/contract-public.mjs
 	node --check scripts/sanitize-fixture.mjs
+	node --check scripts/contract-members.mjs
+	node --check scripts/webbe-validators-fixture.mjs
+	node --check scripts/filetype-fixture.mjs
+	node --check scripts/forms-fixture.mjs
+	node --check scripts/collate-fixture.mjs
+	node --check scripts/pdf-fixture.mjs
 	go vet -tags=integration ./...
 
-# Needs Node and `npm ci --prefix tests/interop` for the Adonis token fixture.
+# Needs Node, libvips (CGO) and `npm ci --prefix tests/interop` for the Node fixtures.
 test-unit:
 	go test -race -count=1 ./...
 
@@ -31,6 +37,7 @@ test-unit:
 test-contract:
 	node scripts/contract-auth.mjs
 	node scripts/contract-public.mjs
+	node scripts/contract-members.mjs
 
 sqlc:
 	sqlc generate

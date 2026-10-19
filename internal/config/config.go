@@ -38,6 +38,13 @@ type Config struct {
 	SMTPUsername     string
 	SMTPPassword     string
 
+	// S3-compatible storage (config/drive.ts).
+	DriveEndpoint string
+	DriveRegion   string
+	DriveKey      string
+	DriveSecret   string
+	DriveBucket   string
+
 	// Google sign-in; the route answers 503 unless all three are set.
 	GoogleClientID     string
 	GoogleClientSecret string
@@ -73,7 +80,9 @@ func Load() (Config, error) {
 		DBSchema: schema, Location: location,
 		ResetPasswordURL: os.Getenv("RESET_PASSWORD_URL"), MailFrom: os.Getenv("MAIL_FROM"), SMTPHost: os.Getenv("SMTP_HOST"),
 		SMTPPort: os.Getenv("SMTP_PORT"), SMTPUsername: os.Getenv("SMTP_USERNAME"), SMTPPassword: os.Getenv("SMTP_PASSWORD"),
-		GoogleClientID: os.Getenv("GOOGLE_CLIENT_ID"), GoogleClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"), GoogleRedirectURI: os.Getenv("GOOGLE_REDIRECT_URI")}
+		GoogleClientID: os.Getenv("GOOGLE_CLIENT_ID"), GoogleClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"), GoogleRedirectURI: os.Getenv("GOOGLE_REDIRECT_URI"),
+		DriveEndpoint: os.Getenv("DRIVE_ENDPOINT"), DriveRegion: os.Getenv("DRIVE_REGION"), DriveKey: os.Getenv("DRIVE_ACCESS_KEY_ID"),
+		DriveSecret: os.Getenv("DRIVE_SECRET_ACCESS_KEY"), DriveBucket: os.Getenv("DRIVE_BUCKET")}
 	if len(c.AppKey) < 16 || c.DBHost == "" || c.DBUser == "" || c.DBName == "" {
 		return Config{}, errors.New("APP_KEY and database configuration are required")
 	}

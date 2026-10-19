@@ -10,6 +10,7 @@ import (
 	"kaderisasi/web/internal/auth"
 	"kaderisasi/web/internal/dbgen"
 	"kaderisasi/web/internal/google"
+	"kaderisasi/web/internal/js"
 	"kaderisasi/web/internal/mail"
 	"kaderisasi/web/internal/member"
 	"kaderisasi/web/internal/vine"
@@ -48,6 +49,16 @@ func failure(w http.ResponseWriter, err error) {
 
 // input is request.all(), or a response for a body the bodyparser rejects.
 func (s *Server) input(w http.ResponseWriter, r *http.Request) (vine.Input, bool) {
+	value, ok := s.body(w, r)
+	if !ok {
+		return nil, false
+	}
+	return vine.InputOf(value), true
+}
+
+// body is request.all() as an ordered value, or a response for a body the
+// bodyparser rejects.
+func (s *Server) body(w http.ResponseWriter, r *http.Request) (js.Value, bool) {
 	input, err := all(r)
 	var invalid *bodyError
 	if errors.As(err, &invalid) {
@@ -58,11 +69,11 @@ func (s *Server) input(w http.ResponseWriter, r *http.Request) (vine.Input, bool
 			Name    string `json:"name"`
 			Status  int    `json:"status"`
 		}{invalid.message, invalid.name, invalid.status})
-		return nil, false
+		return js.Value{}, false
 	}
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, message{"GENERAL_ERROR"})
-		return nil, false
+		return js.Value{}, false
 	}
 	return input, true
 }

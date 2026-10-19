@@ -13,10 +13,11 @@ import (
 
 // Issue is one entry of E_VALIDATION_ERROR.messages (SimpleErrorReporter).
 type Issue struct {
-	Message string         `json:"message"`
-	Rule    string         `json:"rule"`
-	Field   string         `json:"field"`
-	Meta    map[string]int `json:"meta,omitempty"`
+	Message string `json:"message"`
+	Rule    string `json:"rule"`
+	Field   string `json:"field"`
+	Meta    any    `json:"meta,omitempty"`
+	Index   *int   `json:"index,omitempty"`
 }
 
 // Error is Vine's E_VALIDATION_ERROR; its message is always "Validation failure".
@@ -26,6 +27,15 @@ func (*Error) Error() string { return "Validation failure" }
 
 // Input is request.all(): JSON values by field name.
 type Input map[string]json.RawMessage
+
+// InputOf converts an ordered request.all() object.
+func InputOf(v js.Value) Input {
+	in := Input{}
+	for k, item := range v.Fields {
+		in[k], _ = item.MarshalJSON()
+	}
+	return in
+}
 
 // String describes `vine.string()` with its chained rules, in chain order:
 // Trim, then Lower, then Email/MinLength/MaxLength.
@@ -79,10 +89,10 @@ func (r String) validate(field string, raw json.RawMessage) (string, *Issue) {
 	}
 	length := len(utf16.Encode([]rune(value)))
 	if r.MinLength > 0 && length < r.MinLength {
-		return "", &Issue{Message: "The " + field + " field must have at least " + itoa(r.MinLength) + " characters", Rule: "minLength", Field: field, Meta: map[string]int{"min": r.MinLength}}
+		return "", &Issue{Message: "The " + field + " field must have at least " + itoa(r.MinLength) + " characters", Rule: "minLength", Field: field, Meta: map[string]any{"min": r.MinLength}}
 	}
 	if r.MaxLength > 0 && length > r.MaxLength {
-		return "", &Issue{Message: "The " + field + " field must not be greater than " + itoa(r.MaxLength) + " characters", Rule: "maxLength", Field: field, Meta: map[string]int{"max": r.MaxLength}}
+		return "", &Issue{Message: "The " + field + " field must not be greater than " + itoa(r.MaxLength) + " characters", Rule: "maxLength", Field: field, Meta: map[string]any{"max": r.MaxLength}}
 	}
 	return value, nil
 }

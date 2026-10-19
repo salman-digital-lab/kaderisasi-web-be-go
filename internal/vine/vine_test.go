@@ -79,7 +79,7 @@ func TestVineInteroperability(t *testing.T) {
 		want := expected.Cases[i]
 		if want.Issues != nil {
 			got, ok := err.(*Error)
-			if !ok || !reflect.DeepEqual(got.Issues, want.Issues) || got.Error() != want.Message {
+			if !ok || !sameJSON(got.Issues, want.Issues) || got.Error() != want.Message {
 				t.Errorf("%s %s: got %v %+v, want %+v", c.Schema, c.Data, value, err, want.Issues)
 			}
 			continue
@@ -108,4 +108,10 @@ func TestVineInteroperability(t *testing.T) {
 	if mismatches > 0 {
 		t.Errorf("%d/%d email mismatches", mismatches, len(emails))
 	}
+}
+
+func sameJSON(a, b any) bool {
+	x, _ := json.Marshal(a)
+	y, _ := json.Marshal(b)
+	return bytes.Equal(x, y)
 }

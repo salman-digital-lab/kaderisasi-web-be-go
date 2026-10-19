@@ -16,7 +16,7 @@ HTTP, middleware and the proxy live in `internal/webapi`. The learner JWT lives 
 | 0 | Service, config, request id/logging, CORS, learner JWT, auth middleware, proxy, `/health` | **Done** |
 | 1 | `auth/*`: register, login, Google, check-email, forgot/reset password (SMTP mailer), logout | **Done**: `scripts/contract-auth.mjs` passes 47/47 |
 | 2 | Public reads: activities, categories, clubs, monthly achievements, certificate verify/show (with throttle) | **Done**: `scripts/contract-public.mjs` passes 210/210, byte for byte |
-| 3 | Profiles, picture, history, notifications, achievements, ruang-curhat, members/submit | Pending |
+| 3 | Profiles, picture, history, notifications, achievements, ruang-curhat, members/submit | **Done**: `scripts/contract-members.mjs` passes 180/180 (one key-order note, below) |
 | 4 | Activity and club registrations | Pending |
 | 5 | Custom forms, sessions, responses, uploads | Pending |
 | 6 | Courses and the remaining certificate routes | Pending |
@@ -27,8 +27,9 @@ Every phase must pass the contract diff against Adonis for the routes it moves, 
 
 ## Contract checks
 
-`make test-contract` runs `scripts/contract-auth.mjs` (phase 1) and
-`scripts/contract-public.mjs` (phase 2) on the shared harness in `scripts/contract-lib.mjs`.
+`make test-contract` runs `scripts/contract-auth.mjs` (phase 1),
+`scripts/contract-public.mjs` (phase 2) and `scripts/contract-members.mjs` (phase 3) on the
+shared harness in `scripts/contract-lib.mjs`.
 Each one does the following:
 
 1. Creates an owned schema `web_go_<run>` in the test database and migrates it with Ace
@@ -146,6 +147,30 @@ The code exchange and ID-token checks are unit-tested against a fake Google
   loopback only), shared by both certificate routes. Behind Coolify's proxy every
   client still shares one bucket, as with Adonis today.
 
+## Phase 3 notes
+
+- **Twin schemas.** Mutating routes run against two owned schemas (`web_go_<run>_a` for
+  Adonis, `_g` for Go) seeded identically, so database state is compared row by row after
+  the same request sequence. Each server gets its own fake S3; object keys, content types,
+  ACLs and deletions are compared.
+- **Validation** (`internal/vine`, `internal/validators`): every web-be validator is ported
+  and fuzzed against web-be's own modules (`scripts/webbe-validators-fixture.mjs`, 4,812
+  cases), including the `vine.file` macro (size, then extension; ordered `meta`).
+- **Multipart** (`internal/webapi/body.go`, `internal/filetype`): bodyparser's
+  `{...query, ...body}` merge, empty strings to `null`, and file-type 20.5 detection
+  (magic bytes for supported extensions, otherwise the name's extension; OOXML via
+  `[Content_Types].xml`), checked against the Node library.
+- **Profile updates** keep Lucid's dirty tracking (`birth_date` is always dirty;
+  `updated_at` only moves when something changed) and knex's insert/update error text.
+- **Known differences:**
+  - Profile pictures are encoded with govips, not sharp: same limits (40 MP input),
+    resize (512×512 inside), format (WebP q82) and key layout, but the bytes differ.
+  - Adonis preloads `university`/`province`/`city` concurrently, so their key order in
+    `GET /v2/profiles` varies between Adonis runs. Go always uses that declaration order.
+  - Responses where Adonis serializes `error.stack` or framework 500 frames carry the
+    same status and message without stack text.
+  - V8's legacy (non-ISO) `Date` parsing is supported for the common forms only.
+
 ## Behaviour kept on purpose (looks odd, but clients depend on it)
 
 - `GET /v2/activities` answers with the key `messages` (not `message`).
@@ -185,11 +210,12 @@ make run
 
 ## Deployment (Coolify)
 
-Create a new application from this repository's `Dockerfile`. It needs no libvips and
-runs a static binary.
+Create a new application from this repository's `Dockerfile`. Since phase 3 the binary
+links libvips (CGO); the Dockerfile builds the same pinned, minimal libvips 8.18.6 as the
+admin API.
 
 - `PORT=3333`, `HOST=0.0.0.0`; health check `GET /health`;
-- the web-be environment (`env/prod/web-be-prod-env`), plus `WEB_BE_LEGACY_URL` set to
+- the web-be environment (`env/prod/web-be-prod-env`, including the `DRIVE_*` S3 keys), plus `WEB_BE_LEGACY_URL` set to
   the Adonis service's internal URL;
 - the public web-be domain moved from the Adonis application to this one, while Adonis
   stays reachable internally.

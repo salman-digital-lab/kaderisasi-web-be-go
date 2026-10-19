@@ -17,7 +17,9 @@ import (
 	"kaderisasi/web/internal/database"
 	"kaderisasi/web/internal/dbgen"
 	"kaderisasi/web/internal/google"
+	"kaderisasi/web/internal/js"
 	"kaderisasi/web/internal/mail"
+	"kaderisasi/web/internal/storage"
 	"kaderisasi/web/internal/webapi"
 )
 
@@ -31,6 +33,7 @@ func run() error {
 		return err
 	}
 	slog.SetDefault(logger)
+	js.Local = c.Location
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	pool, err := database.Open(ctx, c)
@@ -39,7 +42,8 @@ func run() error {
 	}
 	defer pool.Close()
 	app := &webapi.Server{Config: c, Users: dbgen.New(pool), Pool: pool, Logger: logger,
-		Mail: mail.SMTP{Host: c.SMTPHost, Port: c.SMTPPort, Username: c.SMTPUsername, Password: c.SMTPPassword}}
+		Storage: storage.New(c.DriveEndpoint, c.DriveRegion, c.DriveKey, c.DriveSecret, c.DriveBucket),
+		Mail:    mail.SMTP{Host: c.SMTPHost, Port: c.SMTPPort, Username: c.SMTPUsername, Password: c.SMTPPassword}}
 	if c.GoogleClientID != "" && c.GoogleClientSecret != "" && c.GoogleRedirectURI != "" {
 		app.Google = &google.Client{ClientID: c.GoogleClientID, ClientSecret: c.GoogleClientSecret, RedirectURI: c.GoogleRedirectURI}
 	}

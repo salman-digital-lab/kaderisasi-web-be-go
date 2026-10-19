@@ -6,10 +6,15 @@ import (
 	"errors"
 	"io"
 	"mime"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
+	"strings"
 
+	"kaderisasi/web/internal/filetype"
+	"kaderisasi/web/internal/js"
 	"kaderisasi/web/internal/vine"
 )
 
@@ -28,90 +33,119 @@ var strictJSON = regexp.MustCompile(`^[\x20\x09\x0a\x0d]*(\[|\{)`)
 // Limits from kaderisasi-web-be/config/bodyparser.ts defaults.
 const jsonLimit = 1 << 20
 const formLimit = 56 << 10
+const multipartLimit = 20 << 20
 
-// all is Adonis's request.all(): the query string merged with the parsed
-// body, body keys winning. The bodyparser turns empty body strings into null
-// (convertEmptyStringsToNull); query string values are kept as they are.
-func all(r *http.Request) (vine.Input, error) {
-	input := vine.Input{}
-	for key, values := range r.URL.Query() {
-		input[key] = queryValue(values)
-	}
+// all is Adonis's request.all(): `{...request.qs(), ...request.body()}` as an
+// ordered JavaScript object. The bodyparser turns empty body strings into
+// null (convertEmptyStringsToNull); query string values are kept as they are.
+func all(r *http.Request) (js.Value, error) {
+	out := orderedQuery(r.URL.RawQuery, false)
 	body, err := parseBody(r)
 	if err != nil {
-		return nil, err
+		return js.Value{}, err
 	}
-	for key, value := range body {
-		input[key] = value
+	if body.Kind == 'o' {
+		for _, k := range body.Keys {
+			put(&out, k, body.Fields[k])
+		}
+	} else if body.Kind == 'a' {
+		for i, item := range body.Items {
+			put(&out, strconv.Itoa(i), item)
+		}
 	}
-	return input, nil
+	out.Keys = js.ObjectKeyOrder(out.Keys)
+	return out, nil
 }
 
-func queryValue(values []string) json.RawMessage {
-	var raw []byte
-	if len(values) == 1 {
-		raw, _ = json.Marshal(values[0])
-	} else {
-		raw, _ = json.Marshal(values)
+func put(o *js.Value, k string, v js.Value) {
+	if _, seen := o.Fields[k]; !seen {
+		o.Keys = append(o.Keys, k)
 	}
-	return raw
+	o.Fields[k] = v
 }
 
-func parseBody(r *http.Request) (vine.Input, error) {
+// orderedQuery parses a query string like `qs` for flat keys: a repeated
+// key becomes an array.
+func orderedQuery(raw string, emptyToNull bool) js.Value {
+	out := js.Value{Kind: 'o', Fields: map[string]js.Value{}}
+	for _, pair := range strings.Split(raw, "&") {
+		if pair == "" {
+			continue
+		}
+		k, v, _ := strings.Cut(pair, "=")
+		key, err := url.QueryUnescape(k)
+		if err != nil {
+			key = k
+		}
+		value, err := url.QueryUnescape(v)
+		if err != nil {
+			value = v
+		}
+		item := js.Value{Kind: 's', String: value}
+		if emptyToNull && value == "" {
+			item = js.Value{Kind: 'n'}
+		}
+		if existing, ok := out.Fields[key]; ok {
+			if existing.Kind == 'a' {
+				existing.Items = append(existing.Items, item)
+				out.Fields[key] = existing
+			} else {
+				out.Fields[key] = js.Value{Kind: 'a', Items: []js.Value{existing, item}}
+			}
+			continue
+		}
+		put(&out, key, item)
+	}
+	out.Keys = js.ObjectKeyOrder(out.Keys)
+	return out
+}
+
+func parseBody(r *http.Request) (js.Value, error) {
+	none := js.Value{Kind: 'o', Fields: map[string]js.Value{}}
 	switch r.Method {
 	case http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete:
 	default:
-		return nil, nil
+		return none, nil
 	}
 	if r.Body == nil || (r.ContentLength == 0 && len(r.TransferEncoding) == 0) {
-		return nil, nil
+		return none, nil
 	}
 	mediaType, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	switch mediaType {
 	case "application/json", "application/json-patch+json", "application/vnd.api+json", "application/csp-report":
 		raw, err := readLimited(r.Body, jsonLimit)
 		if err != nil {
-			return nil, err
+			return none, err
 		}
 		if len(raw) == 0 {
-			return nil, nil
+			return none, nil
 		}
 		if !strictJSON.Match(raw) {
-			return nil, &bodyError{http.StatusUnprocessableEntity, "Exception", "Invalid JSON, only supports object and array"}
+			return none, &bodyError{http.StatusUnprocessableEntity, "Exception", "Invalid JSON, only supports object and array"}
 		}
-		var parsed any
-		decoder := json.NewDecoder(bytes.NewReader(raw))
-		decoder.UseNumber()
-		if err := decoder.Decode(&parsed); err != nil || decoder.More() {
+		parsed, err := js.Parse(raw)
+		if err != nil {
 			// JSON.parse's SyntaxError; V8's wording is only reproduced for a
 			// truncated document.
 			text := "Invalid JSON body"
-			if errors.Is(err, io.ErrUnexpectedEOF) {
+			var decoder = json.NewDecoder(bytes.NewReader(raw))
+			var probe any
+			if derr := decoder.Decode(&probe); errors.Is(derr, io.ErrUnexpectedEOF) {
 				text = "Unexpected end of JSON input"
 			}
-			return nil, &bodyError{http.StatusBadRequest, "SyntaxError", text}
+			return none, &bodyError{http.StatusBadRequest, "SyntaxError", text}
 		}
-		return objectInput(emptyToNull(parsed)), nil
+		return emptyToNull(parsed), nil
+	case "multipart/form-data":
+		return parseMultipart(r)
 	case "application/x-www-form-urlencoded":
 		raw, err := readLimited(r.Body, formLimit)
 		if err != nil {
-			return nil, err
+			return none, err
 		}
-		values, err := url.ParseQuery(string(raw))
-		if err != nil {
-			return nil, &bodyError{http.StatusBadRequest, "Error", "Invalid form body"}
-		}
-		input := vine.Input{}
-		for key, list := range values {
-			var value any = list
-			if len(list) == 1 {
-				value = list[0]
-			}
-			input[key], _ = json.Marshal(emptyToNull(value))
-		}
-		return input, nil
+		return orderedQuery(string(raw), true), nil
 	}
-	return nil, nil
+	return none, nil
 }
 
 func readLimited(body io.Reader, limit int64) ([]byte, error) {
@@ -126,45 +160,70 @@ func readLimited(body io.Reader, limit int64) ([]byte, error) {
 }
 
 // emptyToNull is the bodyparser's JSON reviver: every nested "" becomes null.
-func emptyToNull(v any) any {
-	switch value := v.(type) {
-	case string:
-		if value == "" {
-			return nil
+func emptyToNull(v js.Value) js.Value {
+	switch v.Kind {
+	case 's':
+		if v.String == "" {
+			return js.Value{Kind: 'n'}
 		}
-	case []any:
-		for i := range value {
-			value[i] = emptyToNull(value[i])
+	case 'a':
+		for i := range v.Items {
+			v.Items[i] = emptyToNull(v.Items[i])
 		}
-	case []string:
-		out := make([]any, len(value))
-		for i := range value {
-			out[i] = emptyToNull(value[i])
-		}
-		return out
-	case map[string]any:
-		for k := range value {
-			value[k] = emptyToNull(value[k])
+	case 'o':
+		for k := range v.Fields {
+			v.Fields[k] = emptyToNull(v.Fields[k])
 		}
 	}
 	return v
 }
 
-// objectInput spreads a parsed body into request.all(); an array body
-// contributes its indexes as keys, like JavaScript object spread.
-func objectInput(v any) vine.Input {
-	input := vine.Input{}
-	switch value := v.(type) {
-	case map[string]any:
-		for k, item := range value {
-			input[k], _ = json.Marshal(item)
-		}
-	case []any:
-		for i, item := range value {
-			raw, _ := json.Marshal(item)
-			key, _ := json.Marshal(i)
-			input[string(key)] = raw
-		}
+// parseMultipart is the bodyparser's multipart handling with autoProcess:
+// fields (empty strings become null) and files with their detected type.
+// Files appear as Kind 'F' values so request.validateUsing sees both.
+func parseMultipart(r *http.Request) (js.Value, error) {
+	out := js.Value{Kind: 'o', Fields: map[string]js.Value{}}
+	_, params, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
+	if err != nil || params["boundary"] == "" {
+		return out, &bodyError{http.StatusBadRequest, "Exception", "Invalid multipart request"}
 	}
-	return input
+	reader := multipart.NewReader(http.MaxBytesReader(nil, r.Body, multipartLimit), params["boundary"])
+	for {
+		part, err := reader.NextPart()
+		if err == io.EOF {
+			break
+		}
+		var tooLarge *http.MaxBytesError
+		if errors.As(err, &tooLarge) {
+			return out, &bodyError{http.StatusRequestEntityTooLarge, "Exception", "request entity too large"}
+		}
+		if err != nil {
+			return out, &bodyError{http.StatusBadRequest, "Exception", err.Error()}
+		}
+		data, err := io.ReadAll(part)
+		if errors.As(err, &tooLarge) {
+			return out, &bodyError{http.StatusRequestEntityTooLarge, "Exception", "request entity too large"}
+		}
+		if err != nil {
+			return out, &bodyError{http.StatusBadRequest, "Exception", err.Error()}
+		}
+		name := part.FormName()
+		if part.FileName() == "" {
+			var item js.Value
+			if len(data) == 0 {
+				item = js.Value{Kind: 'n'}
+			} else {
+				item = js.Value{Kind: 's', String: string(data)}
+			}
+			put(&out, name, item)
+			continue
+		}
+		upload := &vine.Upload{FieldName: name, ClientName: part.FileName(), ContentType: part.Header.Get("Content-Type"), Data: data}
+		if t := filetype.ForUpload(upload.ClientName, upload.ContentType, data); t != nil {
+			upload.Extname, upload.Type, upload.Subtype, upload.HasExtname = t.Ext, t.Type, t.Subtype, true
+		}
+		put(&out, name, js.Value{Kind: 'F', File: upload})
+	}
+	out.Keys = js.ObjectKeyOrder(out.Keys)
+	return out, nil
 }
