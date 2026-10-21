@@ -266,16 +266,33 @@ reference while its checkout exists.
 
 ## Deployment (Coolify)
 
-Create a new application from this repository's `Dockerfile`. Since phase 3 the binary
-links libvips (CGO); the Dockerfile builds the same pinned, minimal libvips 8.18.6 as the
-admin API.
+The existing application `kaderisasi-web-be-prod` (`z4os8owcgg8g80cwwokcc000`, domain
+`https://api-kaderisasi.salmanitb.com`, container port 3333, health check `GET /health`)
+is switched in place, as the admin API was (`../kaderisasi-admin-be-go/docs/COOLIFY.md`):
 
-- `PORT=3333`, `HOST=0.0.0.0`; health check `GET /health`;
-- the web-be environment (`env/prod/web-be-prod-env`, including the `DRIVE_*` S3 keys);
-  `WEB_BE_LEGACY_URL` is no longer read and can be removed;
-- the public web-be domain moved from the Adonis application to this one.
+- repository `salman-digital-lab/kaderisasi-web-be-go`, branch `main`;
+- build pack `dockerfile` (`/Dockerfile`), start command `/app/web-api`, no install/build
+  overrides, `inject_build_args_to_dockerfile` disabled;
+- domain, port, health check and all environment variables kept. The Go binary reads the
+  same names as web-be (`APP_KEY`, `DB_*`, `SMTP_*`, `MAIL_FROM`, `RESET_PASSWORD_URL`,
+  `DRIVE_*`, `GOOGLE_*`, `TZ`, `PORT`, `HOST`); `WEB_BE_LEGACY_URL` is not read.
 
-Rollback: point the domain back at the Adonis application. No data migration is
-involved, and credentials and stored data stay interoperable in both directions. Keep the
-Adonis application stopped but available for one release, then delete it and archive
-`kaderisasi-web-be`.
+The Dockerfile builds the pinned, minimal libvips 8.18.6 (CGO) and runs `go vet` and the unit
+tests, including the Node interop fixtures, during the build. The runtime image has no Node.
+`.dockerignore` is an allowlist, so env files and local artifacts never reach the build.
+
+Before switching, validate the image in a temporary internal application with no public
+domain and the same environment, and record the current Adonis image for rollback.
+
+Rollback: `coolify app rollback run z4os8owcgg8g80cwwokcc000 --commit <saved Adonis image>`
+and restore repository `salman-digital-lab/kaderisasi-web-be`, build pack `railpack` and
+start command `node build/bin/server.js`. No database step is involved; credentials,
+tokens and stored data stay interoperable in both directions. Keep that rollback path for
+one release, then archive `kaderisasi-web-be`.
+
+### Smoke checks after a deployment (read-only)
+
+`/health`; `/v2/activities`, `/v2/clubs`, `/v2/achievements/monthly`,
+`/v2/certificates/verify/<code>` compared with the previous answers; an unauthenticated
+`/v2/profiles` (plain-text 401); an unknown route (Adonis-style 404); a credentialed CORS
+preflight from `https://kaderisasi.salmanitb.com`.

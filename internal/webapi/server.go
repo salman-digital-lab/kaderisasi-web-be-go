@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -139,9 +140,13 @@ func writeJSON(w http.ResponseWriter, status int, data any) {
 		_, _ = w.Write([]byte(`{"message":"GENERAL_ERROR"}`))
 		return
 	}
+	body := rawLineSeparators(bytes.TrimRight(b.Bytes(), "\n"))
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	// Like Adonis, send the length instead of a chunked body (net/http only
+	// does so by itself for small bodies).
+	w.Header().Set("Content-Length", strconv.Itoa(len(body)))
 	w.WriteHeader(status)
-	_, _ = w.Write(rawLineSeparators(bytes.TrimRight(b.Bytes(), "\n")))
+	_, _ = w.Write(body)
 }
 
 // rawLineSeparators undoes encoding/json's \u2028 and \u2029 escapes, which
