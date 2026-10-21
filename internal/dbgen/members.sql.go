@@ -463,7 +463,7 @@ func (q *Queries) ProvincesByIDs(ctx context.Context, ids []int32) ([]ProvincesB
 }
 
 const registrationsByUser = `-- name: RegistrationsByUser :many
-SELECT id, user_id, activity_id, status, questionnaire_answer, scoring_data, created_at, updated_at, guest_data, certificate_group FROM activity_registrations WHERE user_id = $1
+SELECT id, user_id, activity_id, status, questionnaire_answer, scoring_data, created_at, updated_at, guest_data FROM activity_registrations WHERE user_id = $1
 `
 
 // ProfilesController.activities
@@ -486,7 +486,6 @@ func (q *Queries) RegistrationsByUser(ctx context.Context, userID *int32) ([]Act
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.GuestData,
-			&i.CertificateGroup,
 		); err != nil {
 			return nil, err
 		}

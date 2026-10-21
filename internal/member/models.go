@@ -34,8 +34,7 @@ func Activity(a dbgen.Activity, zone *time.Location) Object {
 // Registration serializes ActivityRegistration (scoring_data is hidden).
 func Registration(r dbgen.ActivityRegistration, zone *time.Location) Object {
 	return KV("id", r.ID, "user_id", r.UserID, "activity_id", r.ActivityID, "status", r.Status, "questionnaire_answer", jsonb(r.QuestionnaireAnswer),
-		"created_at", DateTime(r.CreatedAt, zone), "updated_at", DateTime(r.UpdatedAt, zone), "guest_data", jsonb(r.GuestData),
-		"certificate_group", r.CertificateGroup)
+		"created_at", DateTime(r.CreatedAt, zone), "updated_at", DateTime(r.UpdatedAt, zone), "guest_data", jsonb(r.GuestData))
 }
 
 // Achievement serializes the Achievement model.

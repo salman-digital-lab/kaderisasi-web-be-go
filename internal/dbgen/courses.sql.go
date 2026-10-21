@@ -432,7 +432,7 @@ func (q *Queries) RecordCourseProgress(ctx context.Context, arg RecordCourseProg
 }
 
 const registrationByIDText = `-- name: RegistrationByIDText :one
-SELECT id, user_id, activity_id, status, questionnaire_answer, scoring_data, created_at, updated_at, guest_data, certificate_group FROM activity_registrations WHERE id = CAST($1::text AS integer) LIMIT 1
+SELECT id, user_id, activity_id, status, questionnaire_answer, scoring_data, created_at, updated_at, guest_data FROM activity_registrations WHERE id = CAST($1::text AS integer) LIMIT 1
 `
 
 func (q *Queries) RegistrationByIDText(ctx context.Context, id string) (ActivityRegistration, error) {
@@ -448,7 +448,6 @@ func (q *Queries) RegistrationByIDText(ctx context.Context, id string) (Activity
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.GuestData,
-		&i.CertificateGroup,
 	)
 	return i, err
 }

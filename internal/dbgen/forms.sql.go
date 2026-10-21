@@ -777,7 +777,7 @@ func (q *Queries) ReadFormSession(ctx context.Context, arg ReadFormSessionParams
 }
 
 const registrationForUpdate = `-- name: RegistrationForUpdate :one
-SELECT id, user_id, activity_id, status, questionnaire_answer, scoring_data, created_at, updated_at, guest_data, certificate_group FROM activity_registrations WHERE id = $1::integer LIMIT 1 FOR UPDATE
+SELECT id, user_id, activity_id, status, questionnaire_answer, scoring_data, created_at, updated_at, guest_data FROM activity_registrations WHERE id = $1::integer LIMIT 1 FOR UPDATE
 `
 
 func (q *Queries) RegistrationForUpdate(ctx context.Context, id int32) (ActivityRegistration, error) {
@@ -793,13 +793,12 @@ func (q *Queries) RegistrationForUpdate(ctx context.Context, id int32) (Activity
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.GuestData,
-		&i.CertificateGroup,
 	)
 	return i, err
 }
 
 const registrationForUser = `-- name: RegistrationForUser :one
-SELECT id, user_id, activity_id, status, questionnaire_answer, scoring_data, created_at, updated_at, guest_data, certificate_group FROM activity_registrations WHERE user_id = $1::integer AND activity_id = CAST($2::text AS integer) LIMIT 1
+SELECT id, user_id, activity_id, status, questionnaire_answer, scoring_data, created_at, updated_at, guest_data FROM activity_registrations WHERE user_id = $1::integer AND activity_id = CAST($2::text AS integer) LIMIT 1
 `
 
 type RegistrationForUserParams struct {
@@ -821,7 +820,6 @@ func (q *Queries) RegistrationForUser(ctx context.Context, arg RegistrationForUs
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.GuestData,
-		&i.CertificateGroup,
 	)
 	return i, err
 }

@@ -127,8 +127,7 @@ CREATE TABLE public.activity_registrations (
     scoring_data jsonb,
     created_at timestamp with time zone,
     updated_at timestamp with time zone,
-    guest_data jsonb,
-    certificate_group character varying(100)
+    guest_data jsonb
 );
 
 CREATE TABLE public.activity_scoring_rubrics (
