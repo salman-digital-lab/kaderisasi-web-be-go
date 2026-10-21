@@ -19,7 +19,7 @@ HTTP and middleware live in `internal/webapi`. The learner JWT lives in
 | 4 | Activity and club registrations | **Done**: covered by `scripts/contract-forms.mjs` |
 | 5 | Custom forms, sessions, responses, uploads | **Done**: `scripts/contract-forms.mjs` passes 264/264 together with phase 4, including concurrent duplicate registrations |
 | 6 | Courses and the remaining certificate routes | **Done**: `scripts/contract-courses.mjs` passes 181/181 |
-| 7 | Remove the proxy; native `404` for unknown routes | **Done**: `scripts/contract-routing.mjs` passes 25/25. Retiring the Adonis deployment is an ops step (below) |
+| 7 | Remove the proxy; native `404` for unknown routes; production cut-over | **Done**: `scripts/contract-routing.mjs` passes 25/25; live in production since 2026-10-21 (below) |
 
 Every phase must pass the contract diff against Adonis for the routes it moves, plus
 `make check` and `make test-unit`. It also ports the matching web-be Japa specs.
@@ -296,3 +296,34 @@ one release, then archive `kaderisasi-web-be`.
 `/v2/certificates/verify/<code>` compared with the previous answers; an unauthenticated
 `/v2/profiles` (plain-text 401); an unknown route (Adonis-style 404); a credentialed CORS
 preflight from `https://kaderisasi.salmanitb.com`.
+
+### Production cut-over record
+
+Completed **2026-10-21 at about 12:58 WIB** (05:58 UTC) on `kaderisasi-web-be-prod`. The repository
+was made public first (as `kaderisasi-web-be` and `kaderisasi-admin-be-go` are), because Coolify's
+only Git source is public GitHub; its full history was scanned for env values, keys and database
+hosts beforehand, with no findings.
+
+- Commit deployed: `33156546ab9d6391d9187d4d34e046f1bc48d5e8` (deployment `ivecwkacddeqdajpwpbh9n7v`).
+- Validation first, in a temporary internal app with the same 28 environment variables (copied app to
+  app, never printed): the Linux image build ran `go vet` and every unit package, the container became
+  healthy, and 32 read-only production requests (lists, details, forms, leaderboard, certificate
+  lookups, 401, 404) plus the credentialed CORS preflight and two read-only auth calls answered
+  byte-for-byte like live Adonis. The temporary app was then deleted.
+- Switch: repository, build pack `dockerfile`, start command `/app/web-api`, build-arg injection off,
+  30-second stop grace. Domain, port, health check and all environment variables unchanged.
+- Health sampling on the public domain every ~2 s: three `503` samples at 05:58:36–05:58:42 UTC while
+  the container was replaced (no rolling update with a custom container name), then `200` throughout.
+- After the switch: the 404 body has no debug frames and request ids are UUIDs (the Go service);
+  `/health`, public lists, `401` on member routes and the CORS preflight answer as before; the live
+  website's home, activity list and detail, clubs, leaderboard, certificate verification and login
+  pages render from the API.
+- Not done on production: signed-in flows (login with a real account, registration, uploads). Those
+  writes are left to a member's own manual check.
+- Rollback image: Adonis `cb92e3238de230c48cd0b0172bf2d732172e5f85` (settings snapshot in the ignored,
+  restricted `.artifacts/deployment/`).
+- Coolify's log endpoint returns no lines for this app (also for the admin API); container health and
+  external checks were used instead.
+- Automatic deployment stays enabled on `main`, but no GitHub webhook from this repository is
+  configured, so new commits deploy only when triggered (`coolify deploy uuid z4os8owcgg8g80cwwokcc000`).
+
