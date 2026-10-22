@@ -1,9 +1,9 @@
-FROM node:24.14.1-trixie-slim AS interop
+FROM node:24.22.1-trixie-slim AS interop
 WORKDIR /interop
 COPY tests/interop/package.json tests/interop/package-lock.json ./
 RUN npm ci --ignore-scripts --omit=dev
 
-FROM golang:1.26.8-trixie AS build
+FROM golang:1.26.10-trixie AS build
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential curl ca-certificates xz-utils meson ninja-build pkg-config libglib2.0-dev libexpat1-dev \

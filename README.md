@@ -9,7 +9,7 @@ deployment are in [docs/MIGRATION.md](docs/MIGRATION.md).
 
 ## Local setup
 
-Required: Go **1.26.8** with CGO and libvips (`brew install go vips pkgconf`), sqlc **1.31.1**,
+Required: Go **1.26.10** with CGO and libvips (`brew install go vips pkgconf`), sqlc **1.31.1**,
 Node **24** (runner, interop fixtures and contract checks).
 
 ```sh
