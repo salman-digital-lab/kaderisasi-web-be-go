@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
@@ -295,7 +296,20 @@ func (s *Server) googleLogin(w http.ResponseWriter, r *http.Request) {
 		}
 		writeJSON(w, http.StatusUnauthorized, message{code})
 	}
-	identity, err := s.Google.VerifyCode(r.Context(), v["code"], v["codeVerifier"], v["nonce"])
+	// Other first-party apps (the Perintis app) send their own registered
+	// callback; anything outside GOOGLE_EXTRA_REDIRECT_URIS is refused. Without
+	// it the web-be contract is unchanged.
+	var identity google.Identity
+	if raw, ok := input["redirectUri"]; ok {
+		var redirectURI string
+		if json.Unmarshal(raw, &redirectURI) != nil || !slices.Contains(s.Config.GoogleExtraRedirectURIs, redirectURI) {
+			writeJSON(w, http.StatusBadRequest, message{"GOOGLE_LOGIN_FAILED"})
+			return
+		}
+		identity, err = s.Google.VerifyCodeFor(r.Context(), v["code"], v["codeVerifier"], v["nonce"], redirectURI)
+	} else {
+		identity, err = s.Google.VerifyCode(r.Context(), v["code"], v["codeVerifier"], v["nonce"])
+	}
 	if err != nil {
 		refuse(err)
 		return

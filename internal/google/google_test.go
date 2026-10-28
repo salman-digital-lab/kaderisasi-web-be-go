@@ -163,3 +163,14 @@ func TestReadIdentityName(t *testing.T) {
 		}
 	}
 }
+
+func TestVerifyCodeForSendsTheGivenRedirect(t *testing.T) {
+	f := newFakeGoogle(t)
+	f.idToken = f.sign(claims(nil), "kid-1")
+	if _, err := f.client().VerifyCodeFor(context.Background(), "the-code", strings.Repeat("v", 43), strings.Repeat("n", 32), "https://perintis.test/masuk/google"); err != nil {
+		t.Fatal(err)
+	}
+	if f.form["redirect_uri"] != "https://perintis.test/masuk/google" {
+		t.Fatalf("redirect_uri = %q", f.form["redirect_uri"])
+	}
+}

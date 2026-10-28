@@ -3,7 +3,10 @@ package webapi
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
+
+	"kaderisasi/web/internal/google"
 )
 
 func TestPerintisRoutesRequireLearner(t *testing.T) {
@@ -38,5 +41,19 @@ func TestPerintisRoutesRequireLearner(t *testing.T) {
 		if rec.Code != http.StatusUnauthorized {
 			t.Errorf("%s %s: got %d, want 401", route[0], route[1], rec.Code)
 		}
+	}
+}
+
+func TestGoogleLoginRefusesUnlistedRedirect(t *testing.T) {
+	s, h := newTestServer(t)
+	s.Google = &google.Client{ClientID: "id", ClientSecret: "secret", RedirectURI: "https://web.test/callback"}
+	s.Config.GoogleExtraRedirectURIs = []string{"https://perintis.test/masuk/google"}
+	body := `{"code":"c","codeVerifier":"` + strings.Repeat("v", 43) + `","nonce":"` + strings.Repeat("n", 32) + `","redirectUri":"https://evil.test/cb"}`
+	req := httptest.NewRequest("POST", "/v2/auth/google", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusBadRequest || !strings.Contains(rec.Body.String(), "GOOGLE_LOGIN_FAILED") {
+		t.Fatalf("got %d %s", rec.Code, rec.Body.String())
 	}
 }

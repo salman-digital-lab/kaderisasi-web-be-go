@@ -71,7 +71,13 @@ func (c *Client) http() *http.Client {
 
 // VerifyCode is verifyGoogleCode.
 func (c *Client) VerifyCode(ctx context.Context, code, codeVerifier, nonce string) (Identity, error) {
-	idToken, err := c.exchange(ctx, code, codeVerifier)
+	return c.VerifyCodeFor(ctx, code, codeVerifier, nonce, c.RedirectURI)
+}
+
+// VerifyCodeFor exchanges a code obtained with another registered redirect
+// URI (for example the Perintis app); callers check it against an allowlist.
+func (c *Client) VerifyCodeFor(ctx context.Context, code, codeVerifier, nonce, redirectURI string) (Identity, error) {
+	idToken, err := c.exchange(ctx, code, codeVerifier, redirectURI)
 	if err != nil {
 		return Identity{}, err
 	}
@@ -82,12 +88,12 @@ func (c *Client) VerifyCode(ctx context.Context, code, codeVerifier, nonce strin
 	return ReadIdentity(claims, nonce)
 }
 
-func (c *Client) exchange(ctx context.Context, code, codeVerifier string) (string, error) {
+func (c *Client) exchange(ctx context.Context, code, codeVerifier, redirectURI string) (string, error) {
 	tokenURL := c.TokenURL
 	if tokenURL == "" {
 		tokenURL = DefaultTokenURL
 	}
-	form := url.Values{"code": {code}, "client_id": {c.ClientID}, "client_secret": {c.ClientSecret}, "redirect_uri": {c.RedirectURI},
+	form := url.Values{"code": {code}, "client_id": {c.ClientID}, "client_secret": {c.ClientSecret}, "redirect_uri": {redirectURI},
 		"grant_type": {"authorization_code"}, "code_verifier": {codeVerifier}}
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, tokenURL, strings.NewReader(form.Encode()))
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -45,6 +46,11 @@ type Config struct {
 	GoogleClientSecret string
 	GoogleRedirectURI  string
 
+	// GoogleExtraRedirectURIs (GOOGLE_EXTRA_REDIRECT_URIS, comma separated)
+	// are further OAuth callbacks a client may name in POST /v2/auth/google,
+	// such as https://perintis.salmanitb.com/masuk/google.
+	GoogleExtraRedirectURIs []string
+
 	// PerintisClock (PERINTIS_CLOCK, RFC 3339) shifts the Perintis programme
 	// clock for local demos and tests. Never set it in production.
 	PerintisClock string
@@ -81,7 +87,7 @@ func Load() (Config, error) {
 		SMTPPort: os.Getenv("SMTP_PORT"), SMTPUsername: os.Getenv("SMTP_USERNAME"), SMTPPassword: os.Getenv("SMTP_PASSWORD"),
 		GoogleClientID: os.Getenv("GOOGLE_CLIENT_ID"), GoogleClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"), GoogleRedirectURI: os.Getenv("GOOGLE_REDIRECT_URI"),
 		DriveEndpoint: os.Getenv("DRIVE_ENDPOINT"), DriveRegion: os.Getenv("DRIVE_REGION"), DriveKey: os.Getenv("DRIVE_ACCESS_KEY_ID"),
-		DriveSecret: os.Getenv("DRIVE_SECRET_ACCESS_KEY"), DriveBucket: os.Getenv("DRIVE_BUCKET"), PerintisClock: os.Getenv("PERINTIS_CLOCK")}
+		DriveSecret: os.Getenv("DRIVE_SECRET_ACCESS_KEY"), DriveBucket: os.Getenv("DRIVE_BUCKET"), PerintisClock: os.Getenv("PERINTIS_CLOCK"), GoogleExtraRedirectURIs: list(os.Getenv("GOOGLE_EXTRA_REDIRECT_URIS"))}
 	if len(c.AppKey) < 16 || c.DBHost == "" || c.DBUser == "" || c.DBName == "" {
 		return Config{}, errors.New("APP_KEY and database configuration are required")
 	}
@@ -98,4 +104,15 @@ func value(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+// list splits a comma-separated setting, dropping blanks.
+func list(value string) []string {
+	items := []string{}
+	for _, item := range strings.Split(value, ",") {
+		if item = strings.TrimSpace(item); item != "" {
+			items = append(items, item)
+		}
+	}
+	return items
 }
