@@ -240,6 +240,12 @@ The code exchange and ID-token checks are unit-tested against a fake Google
   Sign-in stays on the existing `/v2/auth/*` routes. See
   `../kaderisasi-admin-be-go/docs/PERINTIS.md` for the data, shared code and
   verification (`go test -tags=integration ./internal/perintis/`).
+- **P3RI committee registration** (`/v2/p3ri/*`, `internal/p3ri`,
+  `internal/webapi/p3ri_routes.go`) is a new feature for `p3ri-salmanitb`
+  (p3ri.salmanitb.com), not a web-be port, so `make test-contract` does not cover
+  it. Same contract style as Perintis: `{"message":"OK","data":…}`, Indonesian
+  failure messages, uploads as data URLs up to 5 MB, private files streamed by
+  `GET /v2/p3ri/files`. See `docs/P3RI.md`.
 
 ## Behaviour kept on purpose (looks odd, but clients depend on it)
 

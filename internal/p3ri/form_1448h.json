@@ -1,0 +1,2046 @@
+{
+  "code": "1448h",
+  "title": "Open Recruitment P3RI Salman ITB 1448 H",
+  "opens_at": "2026-10-01T00:00:00+07:00",
+  "closes_at": "2026-10-31T23:59:59+07:00",
+  "intro": [
+    "Ramadhan dan Idul Adha memang masih lama, tapi persiapan buat menyambut dua momen penuh keberkahan ini udah dimulai dari sekarang! Tahun ini P3RI Salman ITB 1448 H kembali membuka kesempatan buat kamu yang mau ambil bagian dalam menyebarkan kebaikan dan menghadirkan kebermanfaatan bagi banyak orang.",
+    "P3RI bukan cuma soal kepanitiaan, rapat, atau proker. Di sini kamu bisa belajar hal baru, ketemu teman-teman baru, mengembangkan diri, dan berproses bersama dalam kebaikan. Bakal ada ± 15 program untuk lebih dari 120.000 penerima manfaat!",
+    "Isi formnya dengan santai, jujur, dan sebaik-baiknya. Jangan lupa baca Bismillah sebelum mulai, yaa!"
+  ],
+  "contacts": [
+    {
+      "name": "Hafiz",
+      "role": "CP Ikhwan",
+      "whatsapp": null
+    },
+    {
+      "name": "Syifa",
+      "role": "CP Akhwat",
+      "whatsapp": null
+    }
+  ],
+  "guidebook_url": null,
+  "faq_url": null,
+  "max_choices": 3,
+  "sections": [
+    {
+      "id": "identitas",
+      "title": "Identitas Diri",
+      "description": "Tak kenal maka tak sayang. Yuk, kita kenalan dulu!",
+      "questions": [
+        {
+          "id": "nama_lengkap",
+          "label": "Nama Lengkap",
+          "type": "short",
+          "required": true
+        },
+        {
+          "id": "nama_panggilan",
+          "label": "Nama Panggilan",
+          "type": "short",
+          "required": true
+        },
+        {
+          "id": "jenis_kelamin",
+          "label": "Jenis Kelamin",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Laki-laki",
+            "Perempuan"
+          ]
+        },
+        {
+          "id": "tempat_lahir",
+          "label": "Tempat Lahir (Kota/Kabupaten)",
+          "type": "short",
+          "required": true
+        },
+        {
+          "id": "tanggal_lahir",
+          "label": "Tanggal Lahir",
+          "type": "date",
+          "required": true
+        },
+        {
+          "id": "daerah_asal",
+          "label": "Daerah Asal",
+          "type": "short",
+          "required": true,
+          "help": "Format: Kota/Kabupaten, Provinsi\nContoh: Kota Depok, Jawa Barat"
+        }
+      ]
+    },
+    {
+      "id": "akademik",
+      "title": "Data Akademik",
+      "description": "Silakan isi pertanyaan-pertanyaan berikut dengan data sebenar-benarnya ya!",
+      "questions": [
+        {
+          "id": "instansi",
+          "label": "Asal Instansi Pendidikan",
+          "type": "short",
+          "required": true,
+          "help": "Jangan singkatan yaa (Contoh: Institut Teknologi Bandung, SMAN 1 Bandung). DIISI HANYA DENGAN INSTANSI AKTIF SAAT INI"
+        },
+        {
+          "id": "program_studi",
+          "label": "Program Studi",
+          "type": "short",
+          "required": true,
+          "help": "Jangan singkatan yaa (Contoh: Desain Komunikasi Visual). Isi \"-\" jika tidak sedang berkuliah."
+        },
+        {
+          "id": "tahun_masuk",
+          "label": "Tahun Masuk Pendidikan",
+          "type": "short",
+          "required": true,
+          "help": "Isi dengan tahun masuk instansi pendidikan (Contoh: 2024)"
+        },
+        {
+          "id": "alamat_tinggal",
+          "label": "Alamat Tinggal Saat Pendidikan",
+          "type": "long",
+          "required": true,
+          "help": "Format: jalan dan nomornya, kelurahan, kecamatan, kota/kabupaten, provinsi\nContoh: Jalan Camar No. 5, Dago, Coblong, Kota Bandung, Jawa Barat"
+        },
+        {
+          "id": "foto_diri",
+          "label": "Foto Diri",
+          "type": "file",
+          "required": true,
+          "help": "Wajib menggunakan jaket almamater. Apabila tidak memiliki jaket almamater, silakan kirim foto diri terbaikmu.",
+          "accept": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kontak",
+      "title": "Kontak",
+      "description": "Silakan isi pertanyaan-pertanyaan berikut dengan data sebenar-benarnya ya!",
+      "questions": [
+        {
+          "id": "whatsapp",
+          "label": "Nomor Whatsapp",
+          "type": "short",
+          "required": true,
+          "help": "Contoh: 6281234567890"
+        },
+        {
+          "id": "line",
+          "label": "ID Line",
+          "type": "short",
+          "required": false
+        },
+        {
+          "id": "telepon_darurat",
+          "label": "No Telepon Darurat",
+          "type": "short",
+          "required": true,
+          "help": "Contoh: 6281234567890"
+        },
+        {
+          "id": "hubungan_darurat",
+          "label": "Hubungan dengan Pemilik No Telepon Darurat",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Ayah",
+            "Ibu"
+          ],
+          "other": true
+        }
+      ]
+    },
+    {
+      "id": "kesehatan",
+      "title": "Riwayat Kesehatan",
+      "description": "Silakan isi pertanyaan-pertanyaan berikut dengan data sebenar-benarnya ya!",
+      "questions": [
+        {
+          "id": "golongan_darah",
+          "label": "Golongan Darah",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "A",
+            "B",
+            "O",
+            "AB",
+            "Tidak tahu"
+          ]
+        },
+        {
+          "id": "riwayat_penyakit",
+          "label": "Riwayat Penyakit",
+          "type": "short",
+          "required": true,
+          "help": "Jika tidak ada, isi dengan \"-\""
+        }
+      ]
+    },
+    {
+      "id": "kaderisasi",
+      "title": "Jenjang Kaderisasi Salman",
+      "description": null,
+      "questions": [
+        {
+          "id": "tahu_kaderisasi",
+          "label": "Apakah kamu mengetahui tentang Kaderisasi Salman?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Ya",
+            "Tidak"
+          ]
+        },
+        {
+          "id": "pernah_kaderisasi",
+          "label": "Apakah kamu pernah mengikuti Kaderisasi Salman?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Ya",
+            "Tidak"
+          ]
+        },
+        {
+          "id": "jenjang_terakhir",
+          "label": "Jika kamu pernah mengikuti Kaderisasi Salman, tingkatan mana yang terakhir kamu ikuti?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "SSC/JSC/ITBSC (Salman/Jatinangor/ITB Spiritual Camp)",
+            "Mentoring Avisman/KK (Kelompok Keluarga)",
+            "LMD (Latihan Mujahid Dakwah)",
+            "INVENTRA (Invention Tradition)",
+            "KOMPROF (Komunitas Keprofesian)",
+            "SPECTRA (Spiritual Entrepreneurial Civilizer Training)",
+            "Belum pernah mengikuti"
+          ]
+        },
+        {
+          "id": "minat_ssc",
+          "label": "Bagi yang belum pernah mengikuti, jika nanti akan diadakan SSC kembali, apakah kamu tertarik untuk mengikuti?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Ya",
+            "Tidak"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "umum",
+      "title": "Pertanyaan Umum Calon Panitia",
+      "description": "Silakan isi pertanyaan-pertanyaan berikut yaa!",
+      "questions": [
+        {
+          "id": "semangat",
+          "label": "Seberapa semangat kamu untuk menjadi bagian dari P3RI?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "alasan_semangat",
+          "label": "Mengapa kamu memilih angka tersebut? Jelaskan secara komprehensif!",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "alasan_ikut",
+          "label": "Alasan ingin mengikuti kepanitiaan P3RI 1448 H",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "kesibukan",
+          "label": "Tuliskan kesibukan (kepanitiaan / organisasi) yang sedang kamu jalani!",
+          "type": "long",
+          "required": true,
+          "help": "format : Acara/Organisasi_Jabatan_Tahun/Periode\ncontoh : Orientasi Jurusan_Ketua Divisi Acara_Agustus-Desember 2025"
+        },
+        {
+          "id": "jarak_km",
+          "label": "Kira-kira berapa jarak dari rumahmu dengan Masjid Salman ITB (dalam Km)?",
+          "type": "short",
+          "required": true,
+          "help": "Bisa ukur dengan Google Maps, yaa!"
+        },
+        {
+          "id": "ketersediaan",
+          "label": "Kamu bisa hadir di Salman di periode kapan aja nih?",
+          "type": "grid",
+          "required": true,
+          "columns": [
+            "Bisa",
+            "Ga Bisa"
+          ],
+          "rows": [
+            "Sebulan sebelum Ramadhan",
+            "Ramadhan Pekan Pertama",
+            "Ramadhan Pekan Kedua",
+            "Ramadhan Pekan Ketiga",
+            "Ramadhan Pekan Keempat/Idul Fitri",
+            "H-3 Idul Adha - Hari-H Idul Adha"
+          ]
+        },
+        {
+          "id": "usulan_sharing",
+          "label": "Jika nanti P3RI hendak mengadakan sebuah acara sharing atau sejenisnya, siapa yang ingin kamu undang? dan topik apa yang ingin kamu dengarkan?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "ekspektasi",
+          "label": "Kalau kamu menjadi bagian dari Panitia P3RI, apa ekspektasi kamu kedepannya?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "usulan_kompetisi",
+          "label": "Jika nanti P3RI mengadakan sebuah kegiatan perlombaan, kompetisi seperti apa yang menurutmu cocok untuk saat itu?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "sekolah_p3ri",
+          "label": "Sekolah P3RI 1448 H",
+          "type": "radio",
+          "required": true,
+          "help": "Sekolah P3RI 1448 H Pusat Insya Allah akan dibuka secara resmi pada:\n📆 Hari, tanggal: 8 November 2026\n📌 Tempat: Masjid Salman ITB\n\nOleh karena itu, seluruh calon panitia yang terpilih nantinya wajib meluangkan waktunya untuk menghadiri pembukaan sekolah P3RI ini. Adapun sekolah P3RI wajib diikuti dengan sungguh sungguh sebagai syarat penerimaan panitia P3RI 1448 H.",
+          "options": [
+            "Aman kakk!",
+            "Hmm, kayanya ga bisa deh kak"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "berkas",
+      "title": "Berkas Syarat Pendaftaran",
+      "description": "Terakhir banget, yuu semangatt!!!",
+      "questions": [
+        {
+          "id": "twibbon",
+          "label": "Upload Twibbon dulu yuk!",
+          "type": "file",
+          "required": true,
+          "help": "Unggah tangkapan layar unggahan twibbon kamu.",
+          "accept": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        {
+          "id": "bukti_follow",
+          "label": "Bukti follow @p3ri.salmanitb",
+          "type": "file",
+          "required": true,
+          "help": "Unggah tangkapan layar bukti follow @p3ri.salmanitb.",
+          "accept": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        },
+        {
+          "id": "bukti_share",
+          "label": "Bukti share poster open recruitment P3RI Salman ITB 1448 H",
+          "type": "file",
+          "required": true,
+          "help": "Unggah tangkapan layar bukti share poster open recruitment P3RI Salman ITB 1448 H.",
+          "accept": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ]
+        }
+      ]
+    }
+  ],
+  "choice_questions": [
+    {
+      "id": "pengalaman",
+      "label": "Apa saja pengalaman organisasi atau kepanitiaan yang relevan dengan pilihan sebelumnya dan pernah diikuti?",
+      "type": "long",
+      "required": true,
+      "help": "format : Acara/Organisasi_Jabatan_Tahun/Periode\ncontoh : AMI_Ketua Umum_2025\njika tidak ada, isi \"-\" saja ya."
+    },
+    {
+      "id": "komitmen",
+      "label": "Komitmen kamu jika kamu diamanahi menjadi panitia di pilihan ini",
+      "type": "long",
+      "required": true
+    }
+  ],
+  "divisions": [
+    {
+      "code": "rnd",
+      "name": "Departemen RnD",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Menurutmu, bagaimana seharusnya sikap seorang pemimpin saat memberi arahan/perintah?",
+          "type": "long",
+          "required": true,
+          "help": "*Jelaskan dalam perspektif kamu sebagai seorang pemimpin"
+        },
+        {
+          "id": "q2",
+          "label": "Menurutmu, bagaimana seharusnya sikap seorang pemimpin dalam mengkomunikasikan pendapat, tujuan, serta visi misi kepada bawahannya?",
+          "type": "long",
+          "required": true,
+          "help": "*Jelaskan dalam perspektif kamu sebagai seorang pemimpin"
+        },
+        {
+          "id": "q3",
+          "label": "Jika kamu menghadapi sebuah kasus yang sejenis dengan deskripsi berikut, apa langkah yang akan kamu rancang untuk menyelesaikannya?\n\n\"Dalam menjalankan suatu program, kamu menemukan sebuah ide/inovasi yang dapat mempermudah dan memperlancar program tersebut. Namun ide yang kamu miliki ternyata tidak se-praktis yang kamu pikirkan, sehingga bawahanmu pun mengalami kesulitan saat akan mengeksekusi ide tersebut. \"",
+          "type": "long",
+          "required": true,
+          "help": "*Jelaskan dalam perspektif kamu sebagai seorang pemimpin.\n*Berikan sebuah contoh yang relevan pada pemasalahan yang biasa atau mungkin terjadi saat ini."
+        }
+      ]
+    },
+    {
+      "code": "lapangan",
+      "name": "Bidang Lapangan",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apakah kamu mempunyai kendaraan? Jenis kendaraan apa yang kamu punya?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Mobil",
+            "Motor",
+            "Tidak punya kendaraan"
+          ]
+        },
+        {
+          "id": "q2",
+          "label": "Apakah kamu bersedia menjadi tim medis?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Ya",
+            "Tidak"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "sponsorship",
+      "name": "Bidang Sponsorship",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Pernah punya pengalaman cari sponsor atau media partner (medpart) sebelumnya? Coba ceritain, gimana caranya kamu dapetin mereka?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Menurut kamu, proposal yang bagus dan menarik biar sponsor dan media partner mau kerja sama itu gimana?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q3",
+          "label": "Apakah kamu punya pengalaman bekerja dengan Google Spreadsheet atau Microsoft Excel? Coba ceritakan!",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q4",
+          "label": "Kira-kira, kalau kamu keterima di bidang ini, langkah pertama kamu apa buat nyari sponsor dan medpar buat acara kita? Ada gambaran mau hubungin siapa dulu?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q5",
+          "label": "Apakah kamu memiliki relasi untuk calon sponsor atau media partner? Coba ceritakan!",
+          "type": "long",
+          "required": true
+        }
+      ]
+    },
+    {
+      "code": "entrepreneurship",
+      "name": "Bidang Entrepreneurship",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa alasan kamu gabung dengan bidang Entrepreneurship?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Apakah kamu punya pengalaman bekerja di bidang ini sebelumnya? Coba ceritakan!",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q3",
+          "label": "Coba lihat di sekitar kita sekarang, misalnya di lingkungan kampus. Menurut kamu, barang atau jasa apa yang lagi dibutuhin atau lagi tren, tapi belum banyak yang jual? Usulkan satu ide produk lengkap dengan alasan kenapa kamu yakin itu bakal laku.",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q4",
+          "label": "Apakah kamu pernah bekerja dengan spreadsheet (Excel/Google Sheets) untuk mencatat semua pemasukan dan pengeluaran biar rapi? Coba ceritakan!",
+          "type": "short",
+          "required": true
+        },
+        {
+          "id": "q5",
+          "label": "Dalam jualan, pasti ada hari di mana target tidak tercapai atau bahkan produk kita tidak laku sama sekali. Kalau kamu yang bertanggung jawab hari itu, apa yang akan kamu lakukan dan bagaimana kamu melaporkannya ke tim?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q6",
+          "label": "Di dalam tim, pasti akan ada banyak ide. Bayangkan idemu tidak terpilih untuk dieksekusi, dan tim memutuskan untuk menjalankan ide temanmu. Sikap seperti apa yang akan kamu tunjukkan dan kontribusi apa yang tetap akan kamu berikan?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q7",
+          "label": "Kalau kita sudah memutuskan untuk memproduksi suatu barang, misalnya jaket atau merchandise lain, apakah kamu sudah punya gambaran atau kenalan vendor/tempat produksi yang bagus? Jika belum, bagaimana caramu mencarinya?",
+          "type": "long",
+          "required": true
+        }
+      ]
+    },
+    {
+      "code": "donaturial",
+      "name": "Bidang Donaturial",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa alasan kamu bergabung dengan bidang Donaturial?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Apakah kamu memiliki pengalaman bekerja di bidang ini sebelumnya?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Ada",
+            "Tidak ada"
+          ]
+        },
+        {
+          "id": "q3",
+          "label": "Bayangkan kamu harus menelepon atau bertemu calon donatur besar yang belum kenal acara kita. Apa yang akan kamu katakan di satu menit pertama untuk bikin dia tertarik dan mau dengerin kamu lebih lanjut?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q4",
+          "label": "Misalnya, kamu sudah follow-up calon donatur berkali-kali tapi belum ada jawaban. Apa yang akan kamu lakukan? Dan gimana caramu nyatet semua data donatur (misal: nama, kontak, jumlah donasi) biar rapi dan nggak ada yang salah?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q5",
+          "label": "Nanti kan kita harus bikin laporan pertanggungjawaban (LPJ) untuk para donatur. Menurut kamu, data keuangan apa aja yang paling penting untuk ditunjukin ke mereka biar mereka percaya kalau donasinya dipakai dengan benar?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q6",
+          "label": "Kalau ada donatur mau kasih sumbangan cash (tunai) dalam jumlah besar, tapi dia minta namanya nggak usah dicatet di laporan resmi panitia. Apa tanggapan dan tindakan kamu?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q7",
+          "label": "Kira-kira, kamu punya gambaran nggak, siapa aja (atau komunitas/perusahaan apa) yang potensial buat jadi donatur kita? Dan gimana rencanamu buat mulai hubungin mereka?",
+          "type": "long",
+          "required": true
+        }
+      ]
+    },
+    {
+      "code": "media_partner",
+      "name": "Bidang Media Partner",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Pernah punya pengalaman cari sponsor atau media partner (medpar) sebelumnya? Coba ceritain, gimana caranya kamu dapetin mereka?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Menurut kamu, proposal yang bagus dan menarik biar sponsor dan media partner mau kerja sama itu gimana?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q3",
+          "label": "Apakah kamu punya pengalaman bekerja dengan Google Spreadsheet atau Microsoft Excel? Coba ceritakan!",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q4",
+          "label": "Kira-kira, kalau kamu keterima di bidang ini, langkah pertama kamu apa buat nyari sponsor dan medpar buat acara kita? Ada gambaran mau hubungin siapa dulu?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q5",
+          "label": "Apakah kamu memiliki relasi untuk calon sponsor atau media partner? Coba ceritakan!",
+          "type": "long",
+          "required": true
+        }
+      ]
+    },
+    {
+      "code": "relasi",
+      "name": "Bidang Relasi",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apakah kamu memiliki pengalaman dalam berkomunikasi profesional dengan perusahaan, organisasi, maupun lembaga lainnya? Jika ada, ceritakan!",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Bidang Relasi adalah wajah atau representasi P3RI dalam berinteraksi dengan pihak luar. Menurutmu, apa saja aspek yang perlu diperhatikan dalam membangun hubungan dengan pihak luar agar citra P3RI tetap profesional?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q3",
+          "label": "Jika dalam proses audiensi pihak luar ternyata meminta keuntungan promosi atau mengajukan penawaran dana/sponsor, bagaimana responmu?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q4",
+          "label": "Ketika menghubungi pihak luar untuk pertama kalinya, apa saja poin yang akan kamu tekankan agar mereka tertarik untuk bekerjasama dengan P3RI?",
+          "type": "long",
+          "required": true
+        }
+      ]
+    },
+    {
+      "code": "kesekretariatan_bendahara",
+      "name": "Kesekretariatan - Bendahara",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Alasan kamu mau milih bendahara?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Expert ngegunain Excel gak?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q3",
+          "label": "Punya pengalaman pake web atau Excel? Jelasin dong",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q4",
+          "label": "Tulisin dong pengalaman kamu kalau pernah jadi bendahara sebelumnya",
+          "type": "long",
+          "required": true
+        }
+      ]
+    },
+    {
+      "code": "berbuka",
+      "name": "Divisi Berbuka",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Di mana kamu tinggal saat ini?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Apakah kamu memiliki kendaraan? Jenis kendaraan apa yang kamu punya?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Mobil",
+            "Motor",
+            "Tidak punya kendaraan"
+          ]
+        },
+        {
+          "id": "q3",
+          "label": "Rate seberapa luang waktu kamu?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        }
+      ]
+    },
+    {
+      "code": "sahur",
+      "name": "Divisi Sahur",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Di mana kamu tinggal saat ini?",
+          "type": "short",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Rate seberapa luang waktu kamu?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q3",
+          "label": "Apakah kamu memiliki kendaraan? Jenis kendaraan apa yang kamu punya?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Tidak punya kendaraan",
+            "Mobil",
+            "Motor"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "community_impact",
+      "name": "Divisi Community Impact",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa alasan kamu bergabung dengan divisi Compact?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Apakah kamu mengetahui tentang ToR, Rundown, dan Teklap? Jika iya, jelaskan secara singkat fungsinya!",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q3",
+          "label": "Apakah kamu bersedia menjadi Event Organizer?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Ya",
+            "Tidak"
+          ]
+        },
+        {
+          "id": "q4",
+          "label": "Apakah kamu punya banyak waktu luang? Rate dong",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q5",
+          "label": "Apakah kamu bersedia melakukan pengabdian masyarakat?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Ya",
+            "Tidak"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "satisfy",
+      "name": "Divisi Satisfy",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa alasan kamu bergabung dengan divisi Satisfy?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Rate seberapa luang waktu kamu?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q3",
+          "label": "Apakah kamu memiliki kendaraan? Jenis kendaraan apa yang kamu punya?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Tidak punya kendaraan",
+            "Mobil",
+            "Motor"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "tarhib",
+      "name": "Divisi Tarhib",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apakah kamu bersedia menjadi konseptor dan eksekutor festival Tarhib?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Ya, bersedia",
+            "Tidak"
+          ]
+        },
+        {
+          "id": "q2",
+          "label": "Apa alasan kamu bergabung dengan divisi Tarhib?",
+          "type": "short",
+          "required": true
+        },
+        {
+          "id": "q3",
+          "label": "Bagaimana cara kamu menjalin kolaborasi yang baik dengan divisi P3RI competition?",
+          "type": "short",
+          "required": true
+        },
+        {
+          "id": "q4",
+          "label": "Apakah kamu selalu ready saat dibutuhkan ? rate dong",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        }
+      ]
+    },
+    {
+      "code": "semarak_ramadhan",
+      "name": "Divisi Semarak Ramadhan",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apakah kamu bersedia jadi konseptor dan eksekutor semarak Ramadhan?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Ya, siap bersedia",
+            "Tidak"
+          ]
+        },
+        {
+          "id": "q2",
+          "label": "Bagaimana cara kamu menjalin kolaborasi yang baik dengan divisi P3RI competition?",
+          "type": "short",
+          "required": true
+        }
+      ]
+    },
+    {
+      "code": "irama",
+      "name": "Divisi IRAMA",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa alasan kamu bergabung dengan divisi IRAMA?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Kamu punya ide ga untuk konsep IRAMA yang akan kamu handle nanti? Jika ya, jelaskan secara singkat!",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q3",
+          "label": "Apakah kamu punya pengalaman menjadi MC sebelumnya? Jika tidak, apakah kamu bersedia untuk belajar dan menjadi MC nantinya?",
+          "type": "short",
+          "required": true
+        }
+      ]
+    },
+    {
+      "code": "festival_adha",
+      "name": "Divisi Festival Adha",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa alasan kamu bergabung dengan divisi Festival Adha?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Apakah kamu bersedia menjadi Master of Ceremony?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Ya, bersedia",
+            "Tidak"
+          ]
+        },
+        {
+          "id": "q3",
+          "label": "Rate seberapa ready kamu saat dibutuhkan!",
+          "type": "scale",
+          "required": false,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q4",
+          "label": "Apakah kamu bersedia menjadi game master?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Siiaaap banget nih!",
+            "Kayaknya ngga..."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "p3ri_competition",
+      "name": "Divisi P3RI Competition",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa alasan kamu bergabung dengan divisi P3RI Competition?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Apakah kamu bersedia menjadi bagian Materi dan Metode di P3RI Competition?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Siap, bersedia!",
+            "Maaf, ga kayanya"
+          ]
+        },
+        {
+          "id": "q3",
+          "label": "Rating skill komunikasi kamu?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        }
+      ]
+    },
+    {
+      "code": "tarawih",
+      "name": "Divisi Tarawih",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa alasan kamu bergabung dengan divisi Tarawih?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Berikan pandanganmu terkait pelaksanaan tarawih yang ideal?",
+          "type": "long",
+          "required": false
+        },
+        {
+          "id": "q3",
+          "label": "Tarawih identik dengan pelaksanaan ibadah di malam hari. Pada malam hari di periode berikut apakah kamu bisa hadir?",
+          "type": "grid",
+          "required": true,
+          "columns": [
+            "Bisaaa",
+            "Ga bisa euy!"
+          ],
+          "rows": [
+            "Ramadhan Pekan 1",
+            "Ramadhan Pekan 2",
+            "Ramadhan Pekan 3",
+            "Ramadhan Pekan 4"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "itikaf",
+      "name": "Divisi Itikaf",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Bagaimana kamu dapat berinteraksi dengan peserta secara tegas tetapi sopan?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Rate seberapa cepat kamu dapat memahami alur kegiatan, alur komando, dan peraturan yang akan diberikan",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q3",
+          "label": "Apakah kamu bersedia meluangkan waktu selama 10 hari terakhir ramadhan?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Ya",
+            "Tidak"
+          ]
+        },
+        {
+          "id": "q4",
+          "label": "Rating skill komunikasi kamu!",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        }
+      ]
+    },
+    {
+      "code": "idain",
+      "name": "Divisi Idain",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa alasan kamu bergabung dengan divisi Eid?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Apakah kamu punya pengalaman sebagai panitia lapangan sebelumnya? Jika ya, ceritakan secara singkat!",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q3",
+          "label": "Bagaimana strategi/cara kamu mengorganisir pelaksanaan shalat Eid agar tertib?",
+          "type": "long",
+          "required": false
+        }
+      ]
+    },
+    {
+      "code": "ppa",
+      "name": "Divisi PPA",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa alasan kamu bergabung di divisi PPA?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Apakah kamu bersedia menjadi Event Organizer ?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Ya",
+            "Tidak"
+          ]
+        },
+        {
+          "id": "q3",
+          "label": "Dari 1 hingga 5, rate skill kamu dalam mengatur suatu komunitas!",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q4",
+          "label": "Menurutmu, bagaimana cara yang tepat mengatur sebuah komunitas agar acara berjalan dengan lancar?",
+          "type": "long",
+          "required": true
+        }
+      ]
+    },
+    {
+      "code": "rdc",
+      "name": "Divisi RDC",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa alasan kamu bergabung dengan divisi RDC ?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Apakah kamu bersedia menjadi childcare?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Ya",
+            "Tidak"
+          ]
+        },
+        {
+          "id": "q3",
+          "label": "Rate seberapa suka kamu main dengan anak-anak",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q4",
+          "label": "Ceritakan pengalaman/cara/tips kamu dalam menjaga/bermain dengan anak kecil",
+          "type": "long",
+          "required": false
+        },
+        {
+          "id": "q5",
+          "label": "Apakah kamu bersedia menjadi Event Organizer?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Ya",
+            "Tidak"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "penyembelihan_pengulitan",
+      "name": "Divisi Penyembelihan & Pengulitan",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apakah kamu memiliki pengalaman untuk jagal?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Apakah kamu memiliki banyak waktu luang?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        }
+      ]
+    },
+    {
+      "code": "pencacahan",
+      "name": "Divisi Pencacahan",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apakah kamu memiliki banyak waktu luang? Rate dong",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q2",
+          "label": "Apakah kamu mempunyai kendaraan? Jenis kendaraan apa yang kamu punya?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Mobil",
+            "Motor",
+            "Tidak punya kendaraan"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "distribusi",
+      "name": "Divisi Distribusi",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apakah kamu memiliki banyak waktu luang? Rate dong",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q2",
+          "label": "Apakah kamu mempunyai kendaraan? Jenis kendaraan apa yang kamu punya?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Mobil",
+            "Motor",
+            "Tidak punya kendaraan"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "akomodasi_transportasi",
+      "name": "Divisi Akomodasi & Transportasi",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa harapanmu setelah bergabung dengan divisi Akomodasi dan Transportasi?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Kendaraan manakah yang kamu miliki?",
+          "type": "checkbox",
+          "required": true,
+          "options": [
+            "Mobil",
+            "Motor"
+          ]
+        },
+        {
+          "id": "q3",
+          "label": "Apakah kamu memiliki kenalan atau vendor yang menyediakan jasa penyewaan kendaraan? Jika ada, sebutkan",
+          "type": "long",
+          "required": false
+        },
+        {
+          "id": "q4",
+          "label": "Seberapa paham kamu dengan peta Kota Bandung?",
+          "type": "scale",
+          "required": false,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q5",
+          "label": "Kendaraan manakah yang bisa kamu gunakan?",
+          "type": "checkbox",
+          "required": true,
+          "options": [
+            "Mobil",
+            "Sepeda Motor"
+          ]
+        },
+        {
+          "id": "q6",
+          "label": "Apa yang akan kamu lakukan jika tiba-tiba tidak dapat bertugas sesuai jadwal, misalnya karena sakit?",
+          "type": "long",
+          "required": true
+        }
+      ]
+    },
+    {
+      "code": "konsumsi",
+      "name": "Divisi Konsumsi",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apakah kamu mengetahui vendor konsumsi yang enak dengan harga terjangkau?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Ya",
+            "Tidak"
+          ]
+        },
+        {
+          "id": "q2",
+          "label": "Apakah kamu siap mengalokasikan waktu saat Ramadhan untuk mencari vendor makanan yang sesuai?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Ya",
+            "Tidak"
+          ]
+        },
+        {
+          "id": "q3",
+          "label": "Kendaraan apa yang kamu miliki?",
+          "type": "checkbox",
+          "required": true,
+          "options": [
+            "Motor",
+            "Mobil",
+            "Tidak ada"
+          ]
+        },
+        {
+          "id": "q4",
+          "label": "Kendaraan apa yang bisa kamu kendarai?",
+          "type": "checkbox",
+          "required": true,
+          "options": [
+            "Motor",
+            "Mobil",
+            "Tidak ada"
+          ]
+        },
+        {
+          "id": "q5",
+          "label": "Apa harapanmu setelah bergabung di divisi konsumsi",
+          "type": "long",
+          "required": false
+        },
+        {
+          "id": "q6",
+          "label": "Apa yang akan kamu lakukan jika tiba-tiba tidak dapat bertugas sesuai jadwal, misalnya karena sakit?",
+          "type": "long",
+          "required": false
+        },
+        {
+          "id": "q7",
+          "label": "Rating kemampuan ber-negosiasi kamu",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        }
+      ]
+    },
+    {
+      "code": "logistik",
+      "name": "Divisi Logistik",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Kendaraan mana yang kamu punyai",
+          "type": "checkbox",
+          "required": true,
+          "options": [
+            "Sepeda Motor",
+            "Mobil",
+            "Tidak punya"
+          ]
+        },
+        {
+          "id": "q2",
+          "label": "Kendaraan apa yang bisa kamu gunakan/kendarai",
+          "type": "checkbox",
+          "required": true,
+          "options": [
+            "Sepeda Motor",
+            "Mobil",
+            "Tidak ada"
+          ]
+        },
+        {
+          "id": "q3",
+          "label": "Rating seberapa luang kamu untuk mencari keperluan di jam operasional toko (pagi/siang)!",
+          "type": "scale",
+          "required": false,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q4",
+          "label": "Apa yang akan kamu lakukan jika tiba-tiba tidak dapat bertugas sesuai jadwal, misalnya karena sakit?",
+          "type": "short",
+          "required": true
+        },
+        {
+          "id": "q5",
+          "label": "Apa harapanmu setelah bergabung dengan divisi logistik?",
+          "type": "long",
+          "required": true
+        }
+      ]
+    },
+    {
+      "code": "technical_support",
+      "name": "Divisi Technical Support",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Seberapa besar keinginanmu untuk belajar mengoperasikan peralatan seperti proyektor dan sound system?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q2",
+          "label": "Apa yang harus kamu lakukan jika secara mendadak (misal sakit) kamu tidak dapat bertugas pada jadwalmu?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q3",
+          "label": "Apakah kamu punya pengalaman mengoperasikan sistem proyektor, sound, dan sebagainya? Jelaskan!",
+          "type": "short",
+          "required": false
+        },
+        {
+          "id": "q4",
+          "label": "Apa harapan kamu bergabung di divisi Technical Support?",
+          "type": "long",
+          "required": false
+        }
+      ]
+    },
+    {
+      "code": "zero_waste",
+      "name": "Divisi Zero Waste",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa yang akan kamu lakukan jika tiba-tiba tidak dapat bertugas sesuai jadwal, misalnya karena sakit?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Sebutkan jenis-jenis sampah yang kamu ketahui",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q3",
+          "label": "Sebutkan satu dampak dari membuang sampah sembarangan atau tidak memilah sampah sesuai jenisnya",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q4",
+          "label": "Apa yang kamu lakukan jika kamu melihat jama'ah yang membuang sampah sembarangan",
+          "type": "long",
+          "required": true,
+          "help": "Jawab dengan singkat, padat, dan jelas ya"
+        },
+        {
+          "id": "q5",
+          "label": "Apa harapanmu setelah bergabung dengan divisi Zero Waste",
+          "type": "long",
+          "required": false
+        },
+        {
+          "id": "q6",
+          "label": "Rating skill komunikasi kamu!",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        }
+      ]
+    },
+    {
+      "code": "monitoring_performa",
+      "name": "Divisi Monitoring & Performa",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa MBTI-mu?",
+          "type": "dropdown",
+          "required": true,
+          "help": "*Jika kamu belum mengetahui MBTI-mu, silahkan tes di link berikut",
+          "options": [
+            "INTJ",
+            "INTP",
+            "ENTJ",
+            "ENTP",
+            "INFJ",
+            "INFP",
+            "ENFJ",
+            "ENFP",
+            "ISTJ",
+            "ISFJ",
+            "ESTJ",
+            "ESFJ",
+            "ISTP",
+            "ISFP",
+            "ESTP",
+            "ESFP"
+          ]
+        },
+        {
+          "id": "q2",
+          "label": "Dalam satu hari, berapa lama kamu mampu dan terbiasa untuk berinteraksi dengan orang lain?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Kurang dari 3 jam",
+            "4 jam",
+            "5 jam",
+            "6 jam",
+            "7 jam",
+            "8 jam",
+            "Lebih dari 8 jam"
+          ]
+        },
+        {
+          "id": "q3",
+          "label": "Dalam skala 1-5, seberapa peka (sensitif) kamu saat kamu menilai dan membaca keadaan seseorang?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q4",
+          "label": "Dalam skala 1-5, seberapa baik kamu saat berinteraksi dengan lingkungan serta orang-orang baru?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q5",
+          "label": "Dalam skala 1-5, seberapa mudah kamu bisa mendapatkan teman baru di lingkungan yang baru?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q6",
+          "label": "Dalam skala 1-5, seberapa kuat rasa empati kamu terhadap orang lain? (Perasaan ingin membantu dan memberi dampak)",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        }
+      ]
+    },
+    {
+      "code": "volunteer",
+      "name": "Divisi Volunteer",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa MBTI-mu?",
+          "type": "dropdown",
+          "required": true,
+          "help": "*Jika kamu belum mengetahui MBTI-mu, silahkan tes di link berikut",
+          "options": [
+            "INTJ",
+            "INTP",
+            "ENTJ",
+            "ENTP",
+            "INFJ",
+            "INFP",
+            "ENFJ",
+            "ENFP",
+            "ISTJ",
+            "ISFJ",
+            "ESTJ",
+            "ESFJ",
+            "ISTP",
+            "ISFP",
+            "ESTP",
+            "ESFP"
+          ]
+        },
+        {
+          "id": "q2",
+          "label": "Dalam skala 1-5, seberapa peka (sensitif) kamu saat kamu menilai dan membaca keadaan seseorang?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q3",
+          "label": "Dalam skala 1-5, seberapa baik kamu saat berinteraksi dengan lingkungan serta orang-orang baru?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q4",
+          "label": "Dalam skala 1-5, seberapa mudah kamu bisa mendapatkan teman baru di lingkungan yang baru?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q5",
+          "label": "Dalam satu hari, berapa lama kamu mampu dan terbiasa untuk berinteraksi dengan orang lain?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Kurang dari 3 jam",
+            "4 jam",
+            "5 jam",
+            "6 jam",
+            "7 jam",
+            "8 jam",
+            "Lebih dari 8 jam"
+          ]
+        },
+        {
+          "id": "q6",
+          "label": "Dalam skala 1-5, seberapa kuat rasa empati kamu terhadap orang lain? (Perasaan ingin membantu dan memberi dampak)",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        }
+      ]
+    },
+    {
+      "code": "kesejahteraan_aspirasi",
+      "name": "Divisi Kesejahteraan & Aspirasi",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa MBTI-mu?",
+          "type": "dropdown",
+          "required": true,
+          "help": "*Jika kamu belum mengetahui MBTI-mu, silahkan tes di link berikut",
+          "options": [
+            "INTJ",
+            "INTP",
+            "ENTJ",
+            "ENTP",
+            "INFJ",
+            "INFP",
+            "ENFJ",
+            "ENFP",
+            "ISTJ",
+            "ISFJ",
+            "ESTJ",
+            "ESFJ",
+            "ISTP",
+            "ISFP",
+            "ESTP",
+            "ESFP"
+          ]
+        },
+        {
+          "id": "q2",
+          "label": "Dalam satu hari, berapa lama kamu mampu dan terbiasa untuk berinteraksi dengan orang lain?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Kurang dari 3 jam",
+            "4 jam",
+            "5 jam",
+            "6 jam",
+            "7 jam",
+            "8 jam",
+            "Lebih dari 8 jam"
+          ]
+        },
+        {
+          "id": "q3",
+          "label": "Dalam skala 1-5, seberapa peka (sensitif) kamu saat kamu menilai dan membaca keadaan seseorang?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q4",
+          "label": "Dalam skala 1-5, seberapa baik kamu saat berinteraksi dengan lingkungan serta orang-orang baru?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q5",
+          "label": "Dalam skala 1-5, seberapa mudah kamu bisa mendapatkan teman baru di lingkungan yang baru?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q6",
+          "label": "Dalam skala 1-5, seberapa kuat rasa empati kamu terhadap orang lain? (Perasaan ingin membantu dan memberi dampak)",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        }
+      ]
+    },
+    {
+      "code": "data_organizer",
+      "name": "Divisi Data Organizer",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apakah kamu familiar dengan ms excel atau google spreadsheet?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Ya",
+            "Tidak terlalu",
+            "Asing"
+          ]
+        },
+        {
+          "id": "q2",
+          "label": "Apakah kamu familiar dengan gforms?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Ya",
+            "Tidak terlalu",
+            "Asing"
+          ]
+        },
+        {
+          "id": "q3",
+          "label": "Apa jenis/tipe pertanyaan di gforms yang cocok untuk mendapatkan informasi kepuasan seseorang?",
+          "type": "short",
+          "required": true
+        },
+        {
+          "id": "q4",
+          "label": "Tuliskan formula yang kamu gunakan untuk memisahkan data jamaah berdasarkan jenis kelamin!",
+          "type": "short",
+          "required": true
+        },
+        {
+          "id": "q5",
+          "label": "Rating seberapa responsif kamu di WhatsApp!",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        }
+      ]
+    },
+    {
+      "code": "data_analytics",
+      "name": "Divisi Data Analytics",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apakah kamu familiar dengan tools statistik dasar? jika iya, sebutkan!",
+          "type": "short",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Pada suatu data berkorelasi linier, r² = 0,756. Maknanya apa?",
+          "type": "short",
+          "required": true
+        },
+        {
+          "id": "q3",
+          "label": "Untuk data sebaran minat suatu kategori, jenis grafik seperti apa yang cocok?",
+          "type": "short",
+          "required": true
+        },
+        {
+          "id": "q4",
+          "label": "Jika kamu diminta untuk menunjukkan perubahan jumlah jamaah dari hari ke hari selama bulan Ramadan, jenis grafik apa yang akan kamu gunakan? Mengapa?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q5",
+          "label": "Interpretasikan grafik di bawah ini!",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q6",
+          "label": "Rating seberapa responsif kamu di WhatsApp!",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        }
+      ]
+    },
+    {
+      "code": "grafis",
+      "name": "Divisi Grafis",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa alasan kamu ingin bergabung dengan divisi Grafis?",
+          "type": "long",
+          "required": false
+        },
+        {
+          "id": "q2",
+          "label": "Apakah kamu memiliki pengalaman dalam bidang desain grafis? Jika ya, ceritakan pengalamanmu",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q3",
+          "label": "Sebutkan software desain atau ilustrasi yang biasa kamu gunakan (misal: Photoshop, Illustrator, IbisPaint, CSP, dll).",
+          "type": "short",
+          "required": true
+        },
+        {
+          "id": "q4",
+          "label": "Apakah kamu memiliki device yang dapat digunakan untuk keperluan editing?",
+          "type": "short",
+          "required": true
+        },
+        {
+          "id": "q5",
+          "label": "Apakah kamu memiliki portofolio desain atau karya grafis yang pernah kamu buat? Jika ya, cantumkan tautannya.",
+          "type": "short",
+          "required": true
+        }
+      ]
+    },
+    {
+      "code": "konten",
+      "name": "Divisi Konten",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa alasan kamu ingin bergabung dengan divisi Konten?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Jelaskan pengalamanmu dalam menulis atau membuat konten (artikel, caption, atau skrip)!",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q3",
+          "label": "Jelaskan seberapa paham kamu terhadap konsep SEO, branding, target audiens, dan riset kata kunci!",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q4",
+          "label": "Seberapa baik kemampuanmu dalam menerapkan teknik persuasive writing (seperti AIDA, PAS) dalam pembuatan konten?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q5",
+          "label": "Seberapa baik kemampuanmu dalam menulis dengan bahasa dan tata tulis yang baik?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        }
+      ]
+    },
+    {
+      "code": "dekorasi",
+      "name": "Divisi Dekorasi",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa alasan kamu ingin bergabung dengan divisi dekorasi?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Apakah kamu memiliki pengalaman dalam bidang dekorasi atau pembuatan kerajinan tangan? Jika ya, jelaskan secara singkat!",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q3",
+          "label": "Apakah kamu memiliki waktu luang yang cukup untuk hadir di lokasi selama proses pengerjaan dekorasi?",
+          "type": "short",
+          "required": true
+        },
+        {
+          "id": "q4",
+          "label": "Jelaskan seberapa teliti kamu dalam memperhatikan detail visual dan keindahan suatu dekorasi!",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q5",
+          "label": "Seberapa terbiasa kamu melakukan kegiatan fisik seperti mengangkat atau menata perlengkapan acara?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        }
+      ]
+    },
+    {
+      "code": "fotografi",
+      "name": "Divisi Fotografi",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa alasan kamu bergabung dengan divisi Fotografi?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Apa yang kamu ketahui tentang exposure triangle?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q3",
+          "label": "Jelaskan secara singkat apa itu composition dalam fotografi!",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q4",
+          "label": "Apakah kamu memiliki kamera sendiri? Jika ya, sebutkan jenisnya.",
+          "type": "short",
+          "required": false
+        }
+      ]
+    },
+    {
+      "code": "videografi",
+      "name": "Divisi Videografi",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa alasan kamu bergabung dengan divisi Videografi?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Apakah kamu memiliki kamera mirrorless? Jika ya, sebutkan tipe dan mereknya.",
+          "type": "short",
+          "required": true
+        },
+        {
+          "id": "q3",
+          "label": "Apakah kamu pernah merekam menggunakan profil log (misal: S-Log, C-Log, dll)? Jika ya, jelaskan pengalamannya singkat.",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q4",
+          "label": "Apakah kamu memiliki gear tambahan (gimbal, drone, mic eksternal, dsb)? Sebutkan jika ada.",
+          "type": "short",
+          "required": false
+        }
+      ]
+    },
+    {
+      "code": "sosial_media",
+      "name": "Divisi Sosial Media",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa alasan kamu ingin bergabung dengan divisi Social Media Specialist?",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Sebutkan media sosial yang paling kamu kuasai dan jelaskan pengalamanmu dalam mengelolanya.",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q3",
+          "label": "Apakah kamu pernah membuat strategi konten atau kalender posting untuk akun media sosial? Jika ya, jelaskan secara singkat.",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q4",
+          "label": "Seberapa paham kamu terhadap algoritma dan tren media sosial saat ini?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        },
+        {
+          "id": "q5",
+          "label": "Seberapa baik kemampuanmu dalam menulis caption yang menarik?",
+          "type": "scale",
+          "required": true,
+          "min": 1,
+          "max": 5
+        }
+      ]
+    },
+    {
+      "code": "website",
+      "name": "Divisi Website",
+      "questions": [
+        {
+          "id": "q1",
+          "label": "Apa alasan kamu bergabung dengan divisi Website?",
+          "type": "short",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "label": "Sebutkan bidang yang kamu kuasai atau minati!",
+          "type": "checkbox",
+          "required": true,
+          "options": [
+            "UI/UX",
+            "Frontend",
+            "Backend"
+          ],
+          "other": true
+        },
+        {
+          "id": "q3",
+          "label": "Jelaskan secara singkat kemampuanmu terkait desain antarmuka (UI/UX) atau pengembangan web (CSS, JavaScript, React, PHP, MySQL, MongoDB, dsb).",
+          "type": "long",
+          "required": true
+        },
+        {
+          "id": "q4",
+          "label": "Apakah kamu memiliki portofolio atau proyek website yang pernah kamu buat? Jika ya, cantumkan tautannya.",
+          "type": "short",
+          "required": false
+        },
+        {
+          "id": "q5",
+          "label": "Apakah kamu siap untuk belajar dan berkontribusi dalam pengembangan tampilan maupun fungsi website?",
+          "type": "radio",
+          "required": true,
+          "options": [
+            "Siaaap banget!",
+            "Skip dulu deh, udah jago"
+          ]
+        }
+      ]
+    }
+  ]
+}

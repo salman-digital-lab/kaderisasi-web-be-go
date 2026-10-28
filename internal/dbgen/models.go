@@ -421,6 +421,22 @@ type MonthlyLeaderboard struct {
 	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
 }
 
+type P3riRegistration struct {
+	ID               int32              `json:"id"`
+	UserID           int32              `json:"user_id"`
+	Status           string             `json:"status"`
+	Choices          []string           `json:"choices"`
+	AcceptedDivision *string            `json:"accepted_division"`
+	Answers          []byte             `json:"answers"`
+	Files            []byte             `json:"files"`
+	AdminNote        *string            `json:"admin_note"`
+	StatusUpdatedBy  *int32             `json:"status_updated_by"`
+	StatusUpdatedAt  pgtype.Timestamptz `json:"status_updated_at"`
+	SubmittedAt      pgtype.Timestamptz `json:"submitted_at"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+}
+
 type PerintisJournal struct {
 	ID                   int32              `json:"id"`
 	MenteeUserID         int32              `json:"mentee_user_id"`

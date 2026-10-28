@@ -60,6 +60,7 @@ func (s *Server) Handler() http.Handler {
 	s.registerForms()
 	s.registerCourses()
 	s.registerPerintis()
+	s.registerP3ri()
 	s.mux.HandleFunc("/", routeNotFound)
 	return s.observe(s.cors(adonisPaths(s.mux)))
 }
