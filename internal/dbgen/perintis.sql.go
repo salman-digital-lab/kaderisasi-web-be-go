@@ -937,6 +937,73 @@ func (q *Queries) PerintisJournalsOfMentorsInMonth(ctx context.Context, arg Peri
 	return items, nil
 }
 
+const perintisMemberSearch = `-- name: PerintisMemberSearch :many
+SELECT
+  u.id AS user_id,
+  COALESCE(p.name, split_part(COALESCE(u.email, ''), '@', 1))::text AS name,
+  u.email,
+  u.member_id,
+  u.account_status,
+  un.name AS university,
+  p.major,
+  p.intake_year
+FROM public_users u
+LEFT JOIN profiles p ON p.user_id = u.id
+LEFT JOIN universities un ON un.id = p.university_id
+WHERE p.name ILIKE '%' || $1::text || '%'
+   OR u.email ILIKE '%' || $1::text || '%'
+   OR u.member_id ILIKE '%' || $1::text || '%'
+ORDER BY (lower(COALESCE(u.email, '')) = lower($2::text)) DESC, 2, u.id
+LIMIT 20
+`
+
+type PerintisMemberSearchParams struct {
+	Pattern string `json:"pattern"`
+	Exact   string `json:"exact"`
+}
+
+type PerintisMemberSearchRow struct {
+	UserID        int32   `json:"user_id"`
+	Name          string  `json:"name"`
+	Email         *string `json:"email"`
+	MemberID      *string `json:"member_id"`
+	AccountStatus string  `json:"account_status"`
+	University    *string `json:"university"`
+	Major         *string `json:"major"`
+	IntakeYear    *int32  `json:"intake_year"`
+}
+
+// Super Admin search over every kaderisasi member (name, email, member ID).
+// The caller escapes LIKE wildcards; exact email matches come first.
+func (q *Queries) PerintisMemberSearch(ctx context.Context, arg PerintisMemberSearchParams) ([]PerintisMemberSearchRow, error) {
+	rows, err := q.db.Query(ctx, perintisMemberSearch, arg.Pattern, arg.Exact)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []PerintisMemberSearchRow{}
+	for rows.Next() {
+		var i PerintisMemberSearchRow
+		if err := rows.Scan(
+			&i.UserID,
+			&i.Name,
+			&i.Email,
+			&i.MemberID,
+			&i.AccountStatus,
+			&i.University,
+			&i.Major,
+			&i.IntakeYear,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const perintisParticipant = `-- name: PerintisParticipant :one
 
 

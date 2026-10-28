@@ -62,6 +62,27 @@ LEFT JOIN provinces pr ON pr.id = p.province_id
 WHERE u.id = ANY(sqlc.arg(user_ids)::int[])
 ORDER BY u.id;
 
+-- Super Admin search over every kaderisasi member (name, email, member ID).
+-- The caller escapes LIKE wildcards; exact email matches come first.
+-- name: PerintisMemberSearch :many
+SELECT
+  u.id AS user_id,
+  COALESCE(p.name, split_part(COALESCE(u.email, ''), '@', 1))::text AS name,
+  u.email,
+  u.member_id,
+  u.account_status,
+  un.name AS university,
+  p.major,
+  p.intake_year
+FROM public_users u
+LEFT JOIN profiles p ON p.user_id = u.id
+LEFT JOIN universities un ON un.id = p.university_id
+WHERE p.name ILIKE '%' || sqlc.arg(pattern)::text || '%'
+   OR u.email ILIKE '%' || sqlc.arg(pattern)::text || '%'
+   OR u.member_id ILIKE '%' || sqlc.arg(pattern)::text || '%'
+ORDER BY (lower(COALESCE(u.email, '')) = lower(sqlc.arg(exact)::text)) DESC, 2, u.id
+LIMIT 20;
+
 -- name: PerintisPublicUserByEmail :one
 SELECT id, email, account_status FROM public_users
 WHERE lower(email) = lower(sqlc.arg(email)::text)
