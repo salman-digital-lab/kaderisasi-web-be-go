@@ -2069,7 +2069,6 @@ CREATE TABLE public.perintis_participants (
 
   UNIQUE (university_id, nim),
   CHECK (is_mentee OR is_mentor OR is_coordinator),
-  CHECK (NOT is_mentee OR (nim IS NOT NULL AND category IS NOT NULL AND kip_k IS NOT NULL)),
   CHECK (is_mentee OR (nim IS NULL AND mentor_user_id IS NULL)),
   CHECK (is_mentor OR coordinator_user_id IS NULL),
   CHECK (category IS NULL OR category IN ('dasar','biaya_hidup')),

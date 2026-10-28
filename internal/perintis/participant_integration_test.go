@@ -213,6 +213,18 @@ func TestParticipantWorkflows(t *testing.T) {
 	if !detail.CanEdit || detail.Journal != nil || detail.AutoData.Tingkat != 2 || len(detail.AutoData.Activities) != 1 || detail.AutoData.Clubs[0] != "Salman Media · Staf Acara" {
 		t.Fatalf("detail: %+v", detail)
 	}
+	// A mentee enrolled before the kategori is known cannot start a lapbul.
+	f.exec(t, `INSERT INTO public_users (id, email, account_status) VALUES (6, 'baru@example.test', 'active')`)
+	f.exec(t, `INSERT INTO perintis_participants (user_id, is_mentee, status) VALUES (6, true, 'pending')`)
+	if bare := must[JournalDetail](t)(f.svc.MyJournal(ctx, 6, "2026-12-01")); bare.CanEdit || bare.LockedReason == nil || !strings.Contains(*bare.LockedReason, "kategori") {
+		t.Fatalf("mentee without kategori: %+v", bare)
+	}
+	_, err = f.svc.SaveJournal(ctx, 6, "2026-12-01", SaveJournalInput{Revision: 0})
+	wantStatus(t, err, 409)
+	f.exec(t, `UPDATE perintis_participants SET category = 'dasar' WHERE user_id = 6`)
+	if ready := must[JournalDetail](t)(f.svc.MyJournal(ctx, 6, "2026-12-01")); !ready.CanEdit || ready.Category != "dasar" {
+		t.Fatalf("kategori set: %+v", ready)
+	}
 	_, err = f.svc.MyJournal(ctx, 1, "2027-01-01")
 	wantStatus(t, err, 404)
 	_, err = f.svc.MyJournal(ctx, 2, "2026-12-01")

@@ -235,6 +235,9 @@ func (w *World) journalDetail(ctx context.Context, user int32, month string) (Jo
 		return JournalDetail{}, err
 	}
 	canEdit, reason := editability(j, month, w.Now)
+	if j == nil && canEdit && p.Category == nil {
+		canEdit, reason = false, strPtr(missingCategory)
+	}
 	out := JournalDetail{Month: month, Category: auto.Category, Window: Window(month, w.Now), AutoData: auto,
 		PreviousTargets: previous, CanEdit: canEdit, LockedReason: reason}
 	if p.Category != nil && j == nil {
@@ -271,6 +274,8 @@ func (s *Service) MyJournal(ctx context.Context, user int32, month string) (Jour
 	return w.journalDetail(ctx, user, month)
 }
 
+const missingCategory = "Data kepesertaanmu belum lengkap: kategori beasiswa belum diisi. Hubungi pengelola agar bisa mengisi Catatan Perjalanan."
+
 // editableJournal locks (or creates) the mentee's row for the month when it
 // may still be changed.
 func (w *World) editableJournal(ctx context.Context, user int32, month string) (dbgen.PerintisJournal, error) {
@@ -294,9 +299,11 @@ func (w *World) editableJournal(ctx context.Context, user int32, month string) (
 	if current != nil {
 		return j, nil
 	}
+	// The kategori picks the lapbul form, so a mentee enrolled before it was
+	// known starts only after the pengelola sets it.
 	category := deref(p.Category)
 	if category == "" {
-		category = "dasar"
+		return j, fail(409, "%s", missingCategory)
 	}
 	j, err = w.Q.InsertPerintisJournal(ctx, dbgen.InsertPerintisJournalParams{MenteeUserID: user, Month: DateOf(month),
 		MentorUserID: p.MentorUserID, Category: category, FormVersion: FormVersion})
