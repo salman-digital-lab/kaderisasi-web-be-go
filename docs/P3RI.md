@@ -9,10 +9,11 @@ This is a fast, temporary feature: one table and a hardcoded form.
 
 ## Data
 
-`p3ri_registrations` (Ace migration
-`1793195171058_create_p3ri_registrations_table`): one row per member
-(`user_id` unique), `status` (`terdaftar`, `seleksi_berkas`, `wawancara`,
-`diterima`, `tidak_diterima`), ordered `choices` (1–3 division codes),
+`p3ri_registrations` (Ace migrations
+`1793195171058_create_p3ri_registrations_table` and
+`1793205707665_narrow_p3ri_registration_statuses`): one row per member
+(`user_id` unique), `status` (`terdaftar` or `diterima`), ordered `choices`
+(1–3 division codes),
 `accepted_division` (set exactly when `diterima`, one of the choices),
 `answers` (`{"common": {<question id>: …}, "divisions": {<code>: {<question id>: …}}}`),
 `files` (`[{field, key, name, mime, size}]`), and admin-only `admin_note`,

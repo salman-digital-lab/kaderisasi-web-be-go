@@ -2194,7 +2194,8 @@ CREATE TABLE public.perintis_session_reports (
 CREATE INDEX perintis_session_reports_month_idx ON public.perintis_session_reports (month, status);
 CREATE INDEX perintis_session_reports_open_case_idx ON public.perintis_session_reports (created_at) WHERE case_status = 'open';
 
--- P3RI committee registration (Ace migration 1793195171058_create_p3ri_registrations_table).
+-- P3RI committee registration (Ace migrations 1793195171058_create_p3ri_registrations_table,
+-- 1793205707665_narrow_p3ri_registration_statuses).
 CREATE TABLE public.p3ri_registrations (
   id serial PRIMARY KEY,
   user_id integer NOT NULL UNIQUE REFERENCES public.public_users(id) ON DELETE RESTRICT,
@@ -2209,7 +2210,7 @@ CREATE TABLE public.p3ri_registrations (
   submitted_at timestamptz NOT NULL DEFAULT now(),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  CHECK (status IN ('terdaftar','seleksi_berkas','wawancara','diterima','tidak_diterima')),
+  CONSTRAINT p3ri_registrations_status_check CHECK (status IN ('terdaftar','diterima')),
   CHECK (cardinality(choices) BETWEEN 1 AND 3),
   CHECK ((status = 'diterima') = (accepted_division IS NOT NULL)),
   CHECK (accepted_division IS NULL OR accepted_division = ANY (choices)),

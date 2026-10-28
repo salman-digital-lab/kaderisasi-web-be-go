@@ -180,7 +180,7 @@ func TestRegistrationLifecycle(t *testing.T) {
 	}
 
 	// Once the committee moves the registration on, it is locked.
-	if _, err := svc.Pool.Exec(ctx, "UPDATE p3ri_registrations SET status='seleksi_berkas' WHERE user_id=1"); err != nil {
+	if _, err := svc.Pool.Exec(ctx, "UPDATE p3ri_registrations SET status='diterima', accepted_division='sahur' WHERE user_id=1"); err != nil {
 		t.Fatal(err)
 	}
 	var failure *Error
@@ -188,7 +188,7 @@ func TestRegistrationLifecycle(t *testing.T) {
 		t.Fatalf("locked registration: %v", err)
 	}
 	mine, err := svc.Mine(ctx, 1)
-	if err != nil || mine == nil || mine.Editable || mine.Status != "seleksi_berkas" {
+	if err != nil || mine == nil || mine.Editable || mine.Status != "diterima" || *mine.AcceptedDivision != "sahur" {
 		t.Fatalf("mine after lock %+v %v", mine, err)
 	}
 
