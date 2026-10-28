@@ -44,6 +44,10 @@ type Config struct {
 	GoogleClientID     string
 	GoogleClientSecret string
 	GoogleRedirectURI  string
+
+	// PerintisClock (PERINTIS_CLOCK, RFC 3339) shifts the Perintis programme
+	// clock for local demos and tests. Never set it in production.
+	PerintisClock string
 }
 
 func Load() (Config, error) {
@@ -77,7 +81,7 @@ func Load() (Config, error) {
 		SMTPPort: os.Getenv("SMTP_PORT"), SMTPUsername: os.Getenv("SMTP_USERNAME"), SMTPPassword: os.Getenv("SMTP_PASSWORD"),
 		GoogleClientID: os.Getenv("GOOGLE_CLIENT_ID"), GoogleClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"), GoogleRedirectURI: os.Getenv("GOOGLE_REDIRECT_URI"),
 		DriveEndpoint: os.Getenv("DRIVE_ENDPOINT"), DriveRegion: os.Getenv("DRIVE_REGION"), DriveKey: os.Getenv("DRIVE_ACCESS_KEY_ID"),
-		DriveSecret: os.Getenv("DRIVE_SECRET_ACCESS_KEY"), DriveBucket: os.Getenv("DRIVE_BUCKET")}
+		DriveSecret: os.Getenv("DRIVE_SECRET_ACCESS_KEY"), DriveBucket: os.Getenv("DRIVE_BUCKET"), PerintisClock: os.Getenv("PERINTIS_CLOCK")}
 	if len(c.AppKey) < 16 || c.DBHost == "" || c.DBUser == "" || c.DBName == "" {
 		return Config{}, errors.New("APP_KEY and database configuration are required")
 	}

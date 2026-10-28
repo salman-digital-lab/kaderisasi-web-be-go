@@ -229,6 +229,18 @@ The code exchange and ID-token checks are unit-tested against a fake Google
 - `GET /health` answers `{"status":"ok"}`; `HEAD` is accepted wherever `GET` is.
 - CORS headers are now added to every response (there are no proxied responses left).
 
+## New routes after the migration
+
+- **Pembinaan Beasiswa Perintis** (`/v2/perintis/*`, `internal/perintis`,
+  `internal/webapi/perintis_routes.go`) is a new feature for
+  `kaderisasi-perintis-fe`, not a web-be port, so `make test-contract` does not
+  cover it. It deliberately uses its own contract: `{"message":"OK","data":…}`
+  with camelCase fields, Indonesian failure messages, JSON bodies (uploads as
+  data URLs up to 5 MB) and private files streamed by `GET /v2/perintis/files`.
+  Sign-in stays on the existing `/v2/auth/*` routes. See
+  `../kaderisasi-admin-be-go/docs/PERINTIS.md` for the data, shared code and
+  verification (`go test -tags=integration ./internal/perintis/`).
+
 ## Behaviour kept on purpose (looks odd, but clients depend on it)
 
 - `GET /v2/activities` answers with the key `messages` (not `message`).

@@ -1,0 +1,90 @@
+{
+  "T1-11": {
+    "theme": "Mengenal diri dan ritme kampus",
+    "goal": "Mentee memetakan kekuatan diri dan menyusun ritme pekanan semester pertama.",
+    "flow": [
+      "Pembuka & kabar (15')",
+      "Peta diri: kekuatan, tantangan, harapan (35')",
+      "Ritme pekanan kuliah–ibadah–istirahat (30')",
+      "Komitmen & target jika–maka (10')"
+    ],
+    "output": "Peta diri dan jadwal pekanan"
+  },
+  "T1-12": {
+    "theme": "Belajar efektif menjelang UAS",
+    "goal": "Mentee menyusun rencana belajar 4 pekan dan strategi menghadapi ujian.",
+    "flow": [
+      "Pembuka & kabar (15')",
+      "Teknik belajar aktif (30')",
+      "Rencana 4 pekan per mata kuliah (35')",
+      "Target jika–maka (10')"
+    ],
+    "output": "Rencana belajar 4 pekan"
+  },
+  "T2-11": {
+    "theme": "Waktu, prioritas, dan energi",
+    "goal": "Mentee memilah prioritas dengan matriks Eisenhower dan menjaga energi.",
+    "flow": [
+      "Pembuka & kabar (15')",
+      "Matriks Eisenhower (30')",
+      "Blok waktu & kalender pekanan (35')",
+      "Target jika–maka (10')"
+    ],
+    "output": "Kalender pekan berjalan"
+  },
+  "T2-12": {
+    "theme": "Organisasi tanpa mengorbankan kuliah",
+    "goal": "Mentee menimbang peran organisasi dan menetapkan batas yang sehat.",
+    "flow": [
+      "Pembuka & kabar (15')",
+      "Cerita peran organisasi (25')",
+      "Peta beban & batas sehat (40')",
+      "Target jika–maka (10')"
+    ],
+    "output": "Daftar peran dan batasnya"
+  },
+  "T3-11": {
+    "theme": "Arah karier dan riset",
+    "goal": "Mentee memetakan minat karier atau riset dan langkah satu semester.",
+    "flow": [
+      "Pembuka & kabar (15')",
+      "Peta minat karier/riset (35')",
+      "Langkah kecil semester ini (30')",
+      "Target jika–maka (10')"
+    ],
+    "output": "Peta minat dan tiga langkah"
+  },
+  "T3-12": {
+    "theme": "Menulis CV dan portofolio",
+    "goal": "Mentee menyusun draf CV satu halaman berdasarkan pengalaman nyata.",
+    "flow": [
+      "Pembuka & kabar (15')",
+      "Membedah contoh CV (25')",
+      "Menulis draf CV (40')",
+      "Target jika–maka (10')"
+    ],
+    "output": "Draf CV satu halaman"
+  },
+  "T4-11": {
+    "theme": "Tugas akhir yang berkelanjutan",
+    "goal": "Mentee menyusun lini masa tugas akhir dan sistem kerja harian.",
+    "flow": [
+      "Pembuka & kabar (15')",
+      "Lini masa tugas akhir (35')",
+      "Sistem kerja harian (30')",
+      "Target jika–maka (10')"
+    ],
+    "output": "Lini masa tugas akhir"
+  },
+  "T4-12": {
+    "theme": "Transisi setelah lulus",
+    "goal": "Mentee menyiapkan rencana enam bulan setelah lulus.",
+    "flow": [
+      "Pembuka & kabar (15')",
+      "Pilihan setelah lulus (30')",
+      "Rencana enam bulan (35')",
+      "Target jika–maka (10')"
+    ],
+    "output": "Rencana enam bulan"
+  }
+}

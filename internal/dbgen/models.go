@@ -421,6 +421,98 @@ type MonthlyLeaderboard struct {
 	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
 }
 
+type PerintisJournal struct {
+	ID                   int32              `json:"id"`
+	MenteeUserID         int32              `json:"mentee_user_id"`
+	Month                pgtype.Date        `json:"month"`
+	MentorUserID         *int32             `json:"mentor_user_id"`
+	Category             string             `json:"category"`
+	FormVersion          int32              `json:"form_version"`
+	Status               string             `json:"status"`
+	Answers              []byte             `json:"answers"`
+	Files                []byte             `json:"files"`
+	PulseEnergy          *int16             `json:"pulse_energy"`
+	PulseAcademic        *int16             `json:"pulse_academic"`
+	PulseFinance         *int16             `json:"pulse_finance"`
+	PulseRelation        *int16             `json:"pulse_relation"`
+	WantsContact         bool               `json:"wants_contact"`
+	HonestyConfirmedAt   pgtype.Timestamptz `json:"honesty_confirmed_at"`
+	SubmittedAt          pgtype.Timestamptz `json:"submitted_at"`
+	IsLate               bool               `json:"is_late"`
+	Revision             int32              `json:"revision"`
+	ReopenedBy           *int32             `json:"reopened_by"`
+	ReopenReason         *string            `json:"reopen_reason"`
+	ResponseAppreciation *string            `json:"response_appreciation"`
+	ResponseText         *string            `json:"response_text"`
+	RevisionRequest      *string            `json:"revision_request"`
+	FlagReason           *string            `json:"flag_reason"`
+	RespondedBy          *int32             `json:"responded_by"`
+	RespondedAt          pgtype.Timestamptz `json:"responded_at"`
+	ResponseReadAt       pgtype.Timestamptz `json:"response_read_at"`
+	AiAssisted           bool               `json:"ai_assisted"`
+	FlagTrigger          *string            `json:"flag_trigger"`
+	FlagStatus           *string            `json:"flag_status"`
+	FlagDueAt            pgtype.Timestamptz `json:"flag_due_at"`
+	FlagHandledBy        *int32             `json:"flag_handled_by"`
+	FlagHandledAt        pgtype.Timestamptz `json:"flag_handled_at"`
+	FlagPrivateNote      *string            `json:"flag_private_note"`
+	FollowupBy           *int32             `json:"followup_by"`
+	FollowupAt           pgtype.Timestamptz `json:"followup_at"`
+	FollowupNote         *string            `json:"followup_note"`
+	CreatedAt            pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `json:"updated_at"`
+}
+
+type PerintisParticipant struct {
+	UserID                 int32              `json:"user_id"`
+	IsMentee               bool               `json:"is_mentee"`
+	IsMentor               bool               `json:"is_mentor"`
+	IsCoordinator          bool               `json:"is_coordinator"`
+	Nim                    *string            `json:"nim"`
+	UniversityID           *int32             `json:"university_id"`
+	KipK                   *bool              `json:"kip_k"`
+	Category               *string            `json:"category"`
+	KaderisasiOverride     *string            `json:"kaderisasi_override"`
+	KaderisasiOverrideNote *string            `json:"kaderisasi_override_note"`
+	MentorUserID           *int32             `json:"mentor_user_id"`
+	CoordinatorUserID      *int32             `json:"coordinator_user_id"`
+	Status                 string             `json:"status"`
+	InactiveReason         *string            `json:"inactive_reason"`
+	UpdatedBy              *int32             `json:"updated_by"`
+	CreatedAt              pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt              pgtype.Timestamptz `json:"updated_at"`
+}
+
+type PerintisSessionReport struct {
+	ID                 int32              `json:"id"`
+	MentorUserID       int32              `json:"mentor_user_id"`
+	Month              pgtype.Date        `json:"month"`
+	SessionDate        pgtype.Date        `json:"session_date"`
+	Mode               string             `json:"mode"`
+	LocationOrLink     *string            `json:"location_or_link"`
+	CurriculumCode     *string            `json:"curriculum_code"`
+	DeviationReason    *string            `json:"deviation_reason"`
+	Summary            *string            `json:"summary"`
+	Photos             []byte             `json:"photos"`
+	CaseNote           *string            `json:"case_note"`
+	CaseStatus         *string            `json:"case_status"`
+	FollowupBy         *int32             `json:"followup_by"`
+	FollowupAt         pgtype.Timestamptz `json:"followup_at"`
+	FollowupNote       *string            `json:"followup_note"`
+	Status             string             `json:"status"`
+	SubmittedAt        pgtype.Timestamptz `json:"submitted_at"`
+	IsLate             bool               `json:"is_late"`
+	ReviewAppreciation *string            `json:"review_appreciation"`
+	ReviewNote         *string            `json:"review_note"`
+	ReviewerKind       *string            `json:"reviewer_kind"`
+	ReviewedBy         *int32             `json:"reviewed_by"`
+	ReviewedAt         pgtype.Timestamptz `json:"reviewed_at"`
+	ReviewReadAt       pgtype.Timestamptz `json:"review_read_at"`
+	VerifiedAt         pgtype.Timestamptz `json:"verified_at"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
+}
+
 type Profile struct {
 	ID               int32              `json:"id"`
 	UserID           *int32             `json:"user_id"`
