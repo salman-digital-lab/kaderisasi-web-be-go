@@ -62,7 +62,7 @@ CREATE TABLE admin_users (id serial PRIMARY KEY, email varchar(255) NOT NULL, di
 CREATE TABLE provinces (id integer PRIMARY KEY, name varchar(100));
 CREATE TABLE cities (id integer PRIMARY KEY, province_id integer, name varchar(255));
 CREATE TABLE universities (id integer PRIMARY KEY, name varchar(100) NOT NULL);
-CREATE TABLE profiles (id serial PRIMARY KEY, user_id integer, name varchar(255) NOT NULL, gender varchar(1), whatsapp varchar(35), instagram varchar(50), linkedin varchar(255), province_id integer, city_id integer, university_id integer, major varchar(50), intake_year integer, level integer DEFAULT 0, badges jsonb DEFAULT '[]', created_at timestamptz, updated_at timestamptz);
+CREATE TABLE profiles (id serial PRIMARY KEY, user_id integer, name varchar(255) NOT NULL, gender varchar(1), whatsapp varchar(35), instagram varchar(50), linkedin varchar(255), province_id integer, city_id integer, university_id integer, major varchar(50), intake_year integer, level integer DEFAULT 0, badges jsonb DEFAULT '[]', education_history jsonb DEFAULT '[]', created_at timestamptz, updated_at timestamptz);
 CREATE TABLE activities (id serial PRIMARY KEY, name varchar(255) NOT NULL, activity_start date, activity_type integer, activity_category integer, certificate_template_id integer);
 CREATE TABLE activity_registrations (id serial PRIMARY KEY, user_id integer, activity_id integer, status varchar(50));
 CREATE TABLE clubs (id serial PRIMARY KEY, name varchar(255) NOT NULL);

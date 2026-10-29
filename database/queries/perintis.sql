@@ -52,6 +52,7 @@ SELECT
   p.intake_year,
   COALESCE(p.level, 0)::int AS level,
   COALESCE(p.badges, '[]'::jsonb) AS badges,
+  COALESCE(p.education_history, '[]'::jsonb) AS education_history,
   c.name AS city,
   pr.name AS province
 FROM public_users u
@@ -73,7 +74,8 @@ SELECT
   u.account_status,
   un.name AS university,
   p.major,
-  p.intake_year
+  p.intake_year,
+  COALESCE(p.education_history, '[]'::jsonb) AS education_history
 FROM public_users u
 LEFT JOIN profiles p ON p.user_id = u.id
 LEFT JOIN universities un ON un.id = p.university_id

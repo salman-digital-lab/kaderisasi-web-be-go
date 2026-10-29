@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -64,9 +65,51 @@ func (w *World) loadPeople(ctx context.Context, ids []int32) error {
 		return err
 	}
 	for _, p := range people {
+		// The member site and admin keep kampus, prodi and angkatan in the
+		// education history; the older profile columns are the fallback.
+		if inst, major, intake, ok := CurrentEducation(p.EducationHistory); ok {
+			if inst != "" {
+				p.University = &inst
+			}
+			if major != "" {
+				p.Major = &major
+			}
+			if intake > 0 {
+				p.IntakeYear = &intake
+			}
+		}
 		w.People[p.UserID] = p
 	}
 	return nil
+}
+
+// CurrentEducation reads the latest entry of a profile's education_history
+// (the last one, as the admin member list shows it). Entries may be null or
+// carry the year as a string; ok is false when there is no usable entry.
+func CurrentEducation(raw []byte) (institution, major string, intake int32, ok bool) {
+	var entries []*struct {
+		Institution string          `json:"institution"`
+		Major       string          `json:"major"`
+		IntakeYear  json.RawMessage `json:"intake_year"`
+	}
+	if json.Unmarshal(raw, &entries) != nil {
+		return "", "", 0, false
+	}
+	for i := len(entries) - 1; i >= 0; i-- {
+		e := entries[i]
+		if e == nil {
+			continue
+		}
+		institution, major = strings.TrimSpace(e.Institution), strings.TrimSpace(e.Major)
+		year := strings.Trim(string(e.IntakeYear), `" `)
+		if n, err := strconv.Atoi(year); err == nil && n > 1900 && n < 3000 {
+			intake = int32(n)
+		}
+		if institution != "" || major != "" || intake > 0 {
+			return institution, major, intake, true
+		}
+	}
+	return "", "", 0, false
 }
 
 // LoadDetails reads activities and clubs for the given people (profiles,

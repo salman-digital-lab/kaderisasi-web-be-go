@@ -411,6 +411,7 @@ type ParticipantRow struct {
 	KipK            *bool    `json:"kipK"`
 	University      string   `json:"university"`
 	Tingkat         int      `json:"tingkat"`
+	Phone           *string  `json:"phone"`
 	MentorName      *string  `json:"mentorName"`
 	CoordinatorName *string  `json:"coordinatorName"`
 	MenteeCount     int      `json:"menteeCount"`

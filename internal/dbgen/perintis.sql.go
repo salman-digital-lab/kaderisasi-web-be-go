@@ -946,7 +946,8 @@ SELECT
   u.account_status,
   un.name AS university,
   p.major,
-  p.intake_year
+  p.intake_year,
+  COALESCE(p.education_history, '[]'::jsonb) AS education_history
 FROM public_users u
 LEFT JOIN profiles p ON p.user_id = u.id
 LEFT JOIN universities un ON un.id = p.university_id
@@ -963,14 +964,15 @@ type PerintisMemberSearchParams struct {
 }
 
 type PerintisMemberSearchRow struct {
-	UserID        int32   `json:"user_id"`
-	Name          string  `json:"name"`
-	Email         *string `json:"email"`
-	MemberID      *string `json:"member_id"`
-	AccountStatus string  `json:"account_status"`
-	University    *string `json:"university"`
-	Major         *string `json:"major"`
-	IntakeYear    *int32  `json:"intake_year"`
+	UserID           int32   `json:"user_id"`
+	Name             string  `json:"name"`
+	Email            *string `json:"email"`
+	MemberID         *string `json:"member_id"`
+	AccountStatus    string  `json:"account_status"`
+	University       *string `json:"university"`
+	Major            *string `json:"major"`
+	IntakeYear       *int32  `json:"intake_year"`
+	EducationHistory []byte  `json:"education_history"`
 }
 
 // Super Admin search over every kaderisasi member (name, email, member ID).
@@ -993,6 +995,7 @@ func (q *Queries) PerintisMemberSearch(ctx context.Context, arg PerintisMemberSe
 			&i.University,
 			&i.Major,
 			&i.IntakeYear,
+			&i.EducationHistory,
 		); err != nil {
 			return nil, err
 		}
@@ -1157,6 +1160,7 @@ SELECT
   p.intake_year,
   COALESCE(p.level, 0)::int AS level,
   COALESCE(p.badges, '[]'::jsonb) AS badges,
+  COALESCE(p.education_history, '[]'::jsonb) AS education_history,
   c.name AS city,
   pr.name AS province
 FROM public_users u
@@ -1169,22 +1173,23 @@ ORDER BY u.id
 `
 
 type PerintisPeopleRow struct {
-	UserID        int32   `json:"user_id"`
-	Email         *string `json:"email"`
-	AccountStatus string  `json:"account_status"`
-	Name          string  `json:"name"`
-	Gender        *string `json:"gender"`
-	Whatsapp      *string `json:"whatsapp"`
-	Instagram     *string `json:"instagram"`
-	Linkedin      *string `json:"linkedin"`
-	UniversityID  *int32  `json:"university_id"`
-	University    *string `json:"university"`
-	Major         *string `json:"major"`
-	IntakeYear    *int32  `json:"intake_year"`
-	Level         int32   `json:"level"`
-	Badges        []byte  `json:"badges"`
-	City          *string `json:"city"`
-	Province      *string `json:"province"`
+	UserID           int32   `json:"user_id"`
+	Email            *string `json:"email"`
+	AccountStatus    string  `json:"account_status"`
+	Name             string  `json:"name"`
+	Gender           *string `json:"gender"`
+	Whatsapp         *string `json:"whatsapp"`
+	Instagram        *string `json:"instagram"`
+	Linkedin         *string `json:"linkedin"`
+	UniversityID     *int32  `json:"university_id"`
+	University       *string `json:"university"`
+	Major            *string `json:"major"`
+	IntakeYear       *int32  `json:"intake_year"`
+	Level            int32   `json:"level"`
+	Badges           []byte  `json:"badges"`
+	EducationHistory []byte  `json:"education_history"`
+	City             *string `json:"city"`
+	Province         *string `json:"province"`
 }
 
 // ---- people (read-only kaderisasi data) ---------------------------------
@@ -1212,6 +1217,7 @@ func (q *Queries) PerintisPeople(ctx context.Context, userIds []int32) ([]Perint
 			&i.IntakeYear,
 			&i.Level,
 			&i.Badges,
+			&i.EducationHistory,
 			&i.City,
 			&i.Province,
 		); err != nil {

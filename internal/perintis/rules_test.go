@@ -110,3 +110,18 @@ func TestCurriculumFallsBackForMissingEntries(t *testing.T) {
 		t.Fatalf("%+v", c)
 	}
 }
+
+func TestCurrentEducationReadsTheLatestEntry(t *testing.T) {
+	inst, major, intake, ok := CurrentEducation([]byte(`[{"institution":"SMA 3"},null,{"institution":"ITB","major":"Fisika","intake_year":"2024"}]`))
+	if !ok || inst != "ITB" || major != "Fisika" || intake != 2024 {
+		t.Fatalf("latest entry: %q %q %d %v", inst, major, intake, ok)
+	}
+	if _, _, intake, ok := CurrentEducation([]byte(`[{"institution":"UNPAD","intake_year":2023},{}]`)); !ok || intake != 2023 {
+		t.Fatalf("empty last entry is skipped: %d %v", intake, ok)
+	}
+	for _, raw := range []string{``, `null`, `[]`, `"x"`, `[null]`} {
+		if _, _, _, ok := CurrentEducation([]byte(raw)); ok {
+			t.Fatalf("%s: no usable entry", raw)
+		}
+	}
+}
