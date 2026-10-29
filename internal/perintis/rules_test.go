@@ -14,13 +14,13 @@ func at(s string) time.Time {
 }
 
 func TestMonthsAndWindows(t *testing.T) {
-	if got := CurrentReportMonth(at("2026-10-31T23:00:00+07:00")); got != "" {
+	if got := CurrentReportMonth(at("2026-09-30T23:00:00+07:00")); got != "" {
 		t.Fatalf("before the programme: %q", got)
 	}
-	if got := CurrentReportMonth(at("2026-11-01T00:00:00+07:00")); got != "2026-10-01" {
+	if got := CurrentReportMonth(at("2026-10-01T00:00:00+07:00")); got != "2026-09-01" {
 		t.Fatalf("first month: %q", got)
 	}
-	if got := ReportMonths(at("2027-01-04T10:00:00+07:00")); len(got) != 3 || got[0] != "2026-12-01" || got[2] != "2026-10-01" {
+	if got := ReportMonths(at("2027-01-04T10:00:00+07:00")); len(got) != 4 || got[0] != "2026-12-01" || got[3] != "2026-09-01" {
 		t.Fatalf("months: %v", got)
 	}
 	for when, want := range map[string]string{

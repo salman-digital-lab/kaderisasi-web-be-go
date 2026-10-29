@@ -2083,7 +2083,7 @@ CREATE INDEX perintis_participants_coordinator_idx ON public.perintis_participan
 CREATE TABLE public.perintis_journals (
   id serial PRIMARY KEY,
   mentee_user_id integer NOT NULL REFERENCES public.perintis_participants(user_id) ON DELETE RESTRICT,
-  month date NOT NULL CHECK (extract(day FROM month) = 1 AND month >= DATE '2026-10-01'),
+  month date NOT NULL CHECK (extract(day FROM month) = 1 AND month >= DATE '2026-09-01'),
   mentor_user_id integer REFERENCES public.perintis_participants(user_id) ON DELETE SET NULL,
   category varchar(20) NOT NULL,
   form_version integer NOT NULL,
@@ -2149,7 +2149,7 @@ CREATE INDEX perintis_journals_followup_idx ON public.perintis_journals (submitt
 CREATE TABLE public.perintis_session_reports (
   id serial PRIMARY KEY,
   mentor_user_id integer NOT NULL REFERENCES public.perintis_participants(user_id) ON DELETE RESTRICT,
-  month date NOT NULL CHECK (extract(day FROM month) = 1 AND month >= DATE '2026-10-01'),
+  month date NOT NULL CHECK (extract(day FROM month) = 1 AND month >= DATE '2026-09-01'),
 
   session_date date,
   mode varchar(10) NOT NULL DEFAULT 'luring',
