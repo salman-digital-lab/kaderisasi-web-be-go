@@ -16,8 +16,8 @@ import (
 // WIB is Asia/Jakarta (no daylight saving), used for every programme date.
 var WIB = time.FixedZone("WIB", 7*60*60)
 
-// FirstMonth is the first reporting month; its lapbul opens 1 Dec 2026.
-const FirstMonth = "2026-11-01"
+// FirstMonth is the first reporting month; its lapbul opens 1 Nov 2026.
+const FirstMonth = "2026-10-01"
 
 // FormVersion is the version of the lapbul form defined in code.
 const FormVersion = 1
