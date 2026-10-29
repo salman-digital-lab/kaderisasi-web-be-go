@@ -227,6 +227,12 @@ type DashboardRow struct {
 	SubmittedAt    *string         `json:"submittedAt"`
 	Flag           *DashboardFlag  `json:"flag"`
 	InactiveStreak bool            `json:"inactiveStreak"`
+	// HeldBy names the mentor who answered this month's lapbul before the
+	// mentee moved here; that lapbul stays with them (PRD §8.7).
+	HeldBy *string `json:"heldBy"`
+	// FormerMentee marks a mentee who moved to another mentor but whose
+	// lapbul for this month this mentor answered.
+	FormerMentee bool `json:"formerMentee"`
 }
 
 type MentorDashboard struct {
@@ -260,6 +266,9 @@ type JournalForMentor struct {
 	History             []HistoryItem `json:"history"`
 	CanRespond          bool          `json:"canRespond"`
 	RespondLockedReason *string       `json:"respondLockedReason"`
+	// MovedAway is set for a mentor whose mentee has since moved to another
+	// group: the lapbul stays readable here, the mentee's profile does not.
+	MovedAway bool `json:"movedAway"`
 }
 
 type ReportReview struct {

@@ -565,10 +565,28 @@ func (s *Service) MentorDashboard(ctx context.Context, user int32, month string)
 	if month, err = w.monthOrCurrent(month); err != nil {
 		return MentorDashboard{}, err
 	}
+	// Lapbul answered by this mentor stay with them after a move (PRD §8.7),
+	// so the rows are the current mentees plus anyone whose lapbul for the
+	// month is held here.
+	frozen, err := w.JournalsOfMentorsInMonth(ctx, []int32{user}, month)
+	if err != nil {
+		return MentorDashboard{}, err
+	}
 	mentees := w.MenteesOf(user)
-	ids := make([]int32, len(mentees))
-	for i, m := range mentees {
-		ids[i] = m.UserID
+	current := map[int32]bool{}
+	ids := make([]int32, 0, len(mentees)+len(frozen))
+	for _, m := range mentees {
+		current[m.UserID] = true
+		ids = append(ids, m.UserID)
+	}
+	former := []int32{}
+	for _, j := range frozen {
+		if !current[j.MenteeUserID] && j.Status != "draft" {
+			if _, ok := w.Participants[j.MenteeUserID]; ok {
+				former = append(former, j.MenteeUserID)
+				ids = append(ids, j.MenteeUserID)
+			}
+		}
 	}
 	all, err := w.Q.PerintisJournalsOfMentees(ctx, ids)
 	if err != nil {
@@ -582,21 +600,47 @@ func (s *Service) MentorDashboard(ctx context.Context, user int32, month string)
 		byMentee[j.MenteeUserID][monthOf(j.Month)] = j
 	}
 	rows := []DashboardRow{}
-	for _, m := range mentees {
-		row := DashboardRow{Mentee: DashboardMentee{PersonSummary: w.MustPerson(m.UserID), Category: deref(m.Category), Tingkat: w.TingkatOf(m.UserID)},
-			Status: "not_started", InactiveStreak: InactiveStreak(month, byMentee[m.UserID])}
-		if j, ok := byMentee[m.UserID][month]; ok {
-			id := j.ID
-			row.JournalID, row.Status, row.IsLate, row.SubmittedAt = &id, j.Status, j.IsLate, iso(j.SubmittedAt)
-			if j.FlagTrigger != nil && deref(j.FlagStatus) != "resolved" {
-				view, err := w.JournalView(ctx, j)
-				if err != nil {
-					return MentorDashboard{}, err
-				}
-				row.Flag = &DashboardFlag{JournalFlag: *view.Flag, JournalID: j.ID}
+	addRow := func(id int32, formerMentee bool) error {
+		m := w.Participants[id]
+		row := DashboardRow{Mentee: DashboardMentee{PersonSummary: w.MustPerson(id), Category: deref(m.Category), Tingkat: w.TingkatOf(id)},
+			Status: "not_started", FormerMentee: formerMentee}
+		if !formerMentee {
+			row.InactiveStreak = InactiveStreak(month, byMentee[id])
+		}
+		j, ok := byMentee[id][month]
+		if !ok {
+			rows = append(rows, row)
+			return nil
+		}
+		row.Status, row.IsLate, row.SubmittedAt = j.Status, j.IsLate, iso(j.SubmittedAt)
+		if j.MentorUserID == nil || *j.MentorUserID != user {
+			if j.Status != "draft" {
+				row.HeldBy = w.NamePtr(j.MentorUserID)
 			}
+			rows = append(rows, row)
+			return nil
+		}
+		jid := j.ID
+		row.JournalID = &jid
+		if j.FlagTrigger != nil && deref(j.FlagStatus) != "resolved" {
+			view, err := w.JournalView(ctx, j)
+			if err != nil {
+				return err
+			}
+			row.Flag = &DashboardFlag{JournalFlag: *view.Flag, JournalID: j.ID}
 		}
 		rows = append(rows, row)
+		return nil
+	}
+	for _, m := range mentees {
+		if err := addRow(m.UserID, false); err != nil {
+			return MentorDashboard{}, err
+		}
+	}
+	for _, id := range former {
+		if err := addRow(id, true); err != nil {
+			return MentorDashboard{}, err
+		}
 	}
 	rank := func(r DashboardRow) int {
 		switch {
@@ -620,10 +664,6 @@ func (s *Service) MentorDashboard(ctx context.Context, user int32, month string)
 		}
 		return rows[a].Mentee.Name < rows[b].Mentee.Name
 	})
-	frozen, err := w.JournalsOfMentorsInMonth(ctx, []int32{user}, month)
-	if err != nil {
-		return MentorDashboard{}, err
-	}
 	return MentorDashboard{Month: month, Tingkat: w.GroupTingkat(user), Rows: rows, ToRespond: CountWaiting(frozen)}, nil
 }
 
@@ -664,7 +704,16 @@ func (s *Service) MentorJournal(ctx context.Context, user, id int32) (JournalFor
 		return JournalForMentor{}, err
 	}
 	lock := RespondLock(monthOf(j.Month), w.Now)
-	return w.ReaderView(ctx, j, lock == nil, lock)
+	return w.mentorReaderView(ctx, user, j, lock == nil, lock)
+}
+
+// mentorReaderView is ReaderView for the mentor holding the lapbul.
+func (w *World) mentorReaderView(ctx context.Context, user int32, j dbgen.PerintisJournal, canRespond bool, reason *string) (JournalForMentor, error) {
+	out, err := w.ReaderView(ctx, j, canRespond, reason)
+	if mentor := w.Participants[j.MenteeUserID].MentorUserID; mentor == nil || *mentor != user {
+		out.MovedAway = true
+	}
+	return out, err
 }
 
 // RespondInput is the mentor's response and decision.
@@ -724,7 +773,7 @@ func (s *Service) Respond(ctx context.Context, user, id int32, in RespondInput) 
 		if err != nil {
 			return err
 		}
-		out, err = w.ReaderView(ctx, j, true, nil)
+		out, err = w.mentorReaderView(ctx, user, j, true, nil)
 		return err
 	})
 	return out, err
@@ -754,7 +803,7 @@ func (s *Service) HandleFlag(ctx context.Context, user, id int32, note string) (
 			return err
 		}
 		lock := RespondLock(monthOf(j.Month), w.Now)
-		out, err = w.ReaderView(ctx, j, lock == nil, lock)
+		out, err = w.mentorReaderView(ctx, user, j, lock == nil, lock)
 		return err
 	})
 	return out, err
@@ -895,6 +944,9 @@ func (s *Service) SaveReport(ctx context.Context, user int32, month string, in S
 		t, err := time.Parse("2006-01-02", *in.SessionDate)
 		if err != nil {
 			return ReportDetail{}, fail(422, "Tanggal sesi tidak valid.")
+		}
+		if start, ok := MonthStart(month); ok && t.Format("2006-01") != start.Format("2006-01") {
+			return ReportDetail{}, fail(422, "Tanggal sesi harus di bulan %s.", MonthLabel(month))
 		}
 		date = pgtype.Date{Time: t, Valid: true}
 	}

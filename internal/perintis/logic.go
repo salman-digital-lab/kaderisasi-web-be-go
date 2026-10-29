@@ -134,7 +134,10 @@ func (w *World) Markers(ctx context.Context, p dbgen.PerintisParticipant) (Marke
 		index := journalIndex(journals)
 		j, ok := index[month]
 		window := Window(month, w.Now)
-		m.LapbulPending = (window != "upcoming" && window != "locked" && (!ok || j.Status == "draft")) ||
+		// Without kategori the lapbul cannot be started, so there is nothing
+		// for the mentee to do until the pengelola sets it.
+		canStart := ok || p.Category != nil
+		m.LapbulPending = (canStart && window != "upcoming" && window != "locked" && (!ok || j.Status == "draft")) ||
 			(ok && j.Status == "revision_requested")
 		for _, x := range journals {
 			m.ResponseUnread = m.ResponseUnread || (x.RespondedAt.Valid && !x.ResponseReadAt.Valid)

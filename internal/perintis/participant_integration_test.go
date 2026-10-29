@@ -221,9 +221,15 @@ func TestParticipantWorkflows(t *testing.T) {
 	}
 	_, err = f.svc.SaveJournal(ctx, 6, "2026-12-01", SaveJournalInput{Revision: 0})
 	wantStatus(t, err, 409)
+	if m := must[Me](t)(f.svc.Me(ctx, 6)); m.Markers.LapbulPending {
+		t.Fatal("a lapbul that cannot be started is not pending")
+	}
 	f.exec(t, `UPDATE perintis_participants SET category = 'dasar' WHERE user_id = 6`)
 	if ready := must[JournalDetail](t)(f.svc.MyJournal(ctx, 6, "2026-12-01")); !ready.CanEdit || ready.Category != "dasar" {
 		t.Fatalf("kategori set: %+v", ready)
+	}
+	if m := must[Me](t)(f.svc.Me(ctx, 6)); !m.Markers.LapbulPending {
+		t.Fatal("lapbul is pending once the kategori is set")
 	}
 	_, err = f.svc.MyJournal(ctx, 1, "2027-01-01")
 	wantStatus(t, err, 404)
@@ -298,6 +304,37 @@ func TestParticipantWorkflows(t *testing.T) {
 	if m := must[Me](t)(f.svc.Me(ctx, 1)); !m.Markers.ResponseUnread {
 		t.Fatal("new response is unread")
 	}
+
+	// An answered lapbul stays with its mentor after the mentee moves (PRD §8.7):
+	// the old mentor still lists it, the new one sees who holds it.
+	f.exec(t, `INSERT INTO public_users (id, email, account_status) VALUES (7, 'galih@example.test', 'active')`)
+	f.exec(t, `INSERT INTO profiles (user_id, name, university_id, intake_year, level, badges) VALUES (7, 'Galih Permana', 1, 2023, 0, '[]')`)
+	f.exec(t, `INSERT INTO perintis_participants (user_id, is_mentor) VALUES (7, true)`)
+	f.exec(t, `UPDATE perintis_participants SET mentor_user_id = 7 WHERE user_id = 1`)
+	rowOf := func(d MentorDashboard, mentee int32) *DashboardRow {
+		for i := range d.Rows {
+			if d.Rows[i].Mentee.UserID == mentee {
+				return &d.Rows[i]
+			}
+		}
+		return nil
+	}
+	old := must[MentorDashboard](t)(f.svc.MentorDashboard(ctx, 2, ""))
+	if r := rowOf(old, 1); r == nil || !r.FormerMentee || r.JournalID == nil || *r.JournalID != j.ID || r.InactiveStreak {
+		t.Fatalf("old mentor keeps the answered lapbul: %+v", r)
+	}
+	moved := must[MentorDashboard](t)(f.svc.MentorDashboard(ctx, 7, ""))
+	if r := rowOf(moved, 1); r == nil || r.FormerMentee || r.JournalID != nil || r.HeldBy == nil || *r.HeldBy != "Rizky Pratama" || r.Flag != nil || r.Status != "accepted" {
+		t.Fatalf("new mentor sees who holds the lapbul: %+v", r)
+	}
+	if held := must[JournalForMentor](t)(f.svc.MentorJournal(ctx, 2, j.ID)); !held.MovedAway {
+		t.Fatal("old mentor is told the mentee moved")
+	}
+	f.exec(t, `UPDATE perintis_participants SET mentor_user_id = 2 WHERE user_id = 1`)
+	f.exec(t, `DELETE FROM perintis_participants WHERE user_id = 7`)
+	if back := must[JournalForMentor](t)(f.svc.MentorJournal(ctx, 2, j.ID)); back.MovedAway {
+		t.Fatal("current mentor is not told the mentee moved")
+	}
 	if err := f.svc.ReadResponse(ctx, 1, "2026-12-01"); err != nil {
 		t.Fatal(err)
 	}
@@ -322,6 +359,9 @@ func TestParticipantWorkflows(t *testing.T) {
 	photo := must[File](t)(f.svc.UploadPhoto(ctx, 2, FilePayload{Name: "foto kelompok.jpg", DataURL: jpeg}))
 	_, err = f.svc.UploadPhoto(ctx, 1, FilePayload{Name: "x.jpg", DataURL: jpeg})
 	wantStatus(t, err, 403)
+	outside := "2027-01-03"
+	_, err = f.svc.SaveReport(ctx, 2, "2026-12-01", SaveReportInput{SessionDate: &outside, Mode: "luring"})
+	wantStatus(t, err, 422) // the session must be in the report month
 	_, err = f.svc.SaveReport(ctx, 2, "2026-12-01", SaveReportInput{Mode: "luring", Photos: []File{{Key: "perintis/reports/9/a.jpg"}}})
 	wantStatus(t, err, 422)
 	date := "2026-12-20"
