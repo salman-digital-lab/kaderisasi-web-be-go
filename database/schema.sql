@@ -2074,7 +2074,7 @@ CREATE TABLE public.perintis_participants (
   CHECK (category IS NULL OR category IN ('dasar','biaya_hidup')),
   CHECK (kaderisasi_override IS NULL OR kaderisasi_override IN ('lmd_lama','lmd_242','setara','belum')),
   CHECK (mentor_user_id IS NULL OR mentor_user_id <> user_id),
-  CHECK (status IN ('active','pending','reserve','inactive')),
+  CHECK (status IN ('active','inactive')),
   CHECK ((status = 'inactive') = (inactive_reason IS NOT NULL))
 );
 CREATE INDEX perintis_participants_mentor_idx ON public.perintis_participants (mentor_user_id) WHERE is_mentee;

@@ -215,7 +215,7 @@ func TestParticipantWorkflows(t *testing.T) {
 	}
 	// A mentee enrolled before the kategori is known cannot start a lapbul.
 	f.exec(t, `INSERT INTO public_users (id, email, account_status) VALUES (6, 'baru@example.test', 'active')`)
-	f.exec(t, `INSERT INTO perintis_participants (user_id, is_mentee, status) VALUES (6, true, 'pending')`)
+	f.exec(t, `INSERT INTO perintis_participants (user_id, is_mentee, status) VALUES (6, true, 'active')`)
 	if bare := must[JournalDetail](t)(f.svc.MyJournal(ctx, 6, "2026-12-01")); bare.CanEdit || bare.LockedReason == nil || !strings.Contains(*bare.LockedReason, "kategori") {
 		t.Fatalf("mentee without kategori: %+v", bare)
 	}
