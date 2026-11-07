@@ -81,3 +81,19 @@ set -a; . ../env/test/web-be-test-env; set +a
 go test -tags=integration -count=1 ./internal/emailchange/   # owned email_go_<run> schema
 go test -count=1 -run EmailChange ./internal/webapi/ ./internal/mail/
 ```
+
+## Production deployment (7 November 2026)
+
+- Ace migrations `1794035764157_add_public_users_lower_email_unique_index` and
+  `1794035765462_create_public_user_email_changes_table` applied to production
+  (no email needed lowercasing; no duplicates). Run through the database's public
+  proxy port because the internal host is not reachable from a workstation.
+  Index valid, table empty afterwards.
+- Deployed `kaderisasi-admin-be-prod` at `787d560`, `kaderisasi-web-be-prod` at
+  `b084cde`, then `kaderisasi-admin-fe-prod` at `69d2bde` and
+  `kaderisasi-web-fe-prod` at `d675e7e` (manual deploys). `kaderisasi-mcp-prod` at
+  `9f9d6d0`.
+- Read-only smoke checks: both `/health` 200; `GET /v2/profiles/email-change` without
+  a session 401; `PUT /v2/auth/confirm-email-change` with a bad token 400
+  `INVALID_TOKEN`; `/confirm-email` page 200; dashboard serves the new email dialog.
+  No member email was changed during the checks.
