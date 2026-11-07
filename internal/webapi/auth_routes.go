@@ -87,6 +87,12 @@ type tokenJSON struct {
 
 // loginSuccess is {message: 'LOGIN_SUCCESS', data: {user, data, token}}.
 func (s *Server) loginSuccess(w http.ResponseWriter, r *http.Request, user dbgen.PublicUser, userJSON member.Object) error {
+	return s.sessionSuccess(w, r, "LOGIN_SUCCESS", user, userJSON)
+}
+
+// sessionSuccess answers {message, data: {user, data: profile, token}} with a
+// fresh learner token, the shape the web frontend stores as its session.
+func (s *Server) sessionSuccess(w http.ResponseWriter, r *http.Request, code string, user dbgen.PublicUser, userJSON member.Object) error {
 	profile, err := member.ProfileFor(r.Context(), dbgen.New(s.Pool), user.ID)
 	if err != nil {
 		return err
@@ -99,7 +105,7 @@ func (s *Server) loginSuccess(w http.ResponseWriter, r *http.Request, user dbgen
 	if profile != nil {
 		data = member.Profile(*profile, s.Config.Location)
 	}
-	writeJSON(w, http.StatusOK, member.KV("message", "LOGIN_SUCCESS", "data", member.KV(
+	writeJSON(w, http.StatusOK, member.KV("message", code, "data", member.KV(
 		"user", userJSON, "data", data, "token", tokenJSON{"bearer", token, "1d"})))
 	return nil
 }

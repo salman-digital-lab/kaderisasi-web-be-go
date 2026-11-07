@@ -246,6 +246,12 @@ The code exchange and ID-token checks are unit-tested against a fake Google
   it. Same contract style as Perintis: `{"message":"OK","data":…}`, Indonesian
   failure messages, uploads as data URLs up to 5 MB, private files streamed by
   `GET /v2/p3ri/files`. See `docs/P3RI.md`.
+- **Member email change** (`/v2/profiles/email-change*`,
+  `PUT /v2/auth/confirm-email-change`, `internal/emailchange`,
+  `internal/webapi/email_change_routes.go`) is new for `kaderisasi-web-fe`'s
+  profile page, not a web-be port, so `make test-contract` does not cover it.
+  Refusals answer `{"message": CODE}` with a real status (not web-be's 500). See
+  `docs/EMAIL_CHANGE.md`.
 
 ## Behaviour kept on purpose (looks odd, but clients depend on it)
 

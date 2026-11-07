@@ -55,6 +55,7 @@ func (s *Server) Handler() http.Handler {
 	s.throttle = newCertificateThrottle(s.now)
 	s.registerCatalog()
 	s.registerProfiles()
+	s.registerEmailChange()
 	s.registerMember()
 	s.registerRegistrations()
 	s.registerForms()

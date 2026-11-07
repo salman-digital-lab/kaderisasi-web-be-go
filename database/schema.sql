@@ -2218,3 +2218,28 @@ CREATE TABLE public.p3ri_registrations (
 );
 CREATE INDEX p3ri_registrations_status_idx ON public.p3ri_registrations (status);
 CREATE INDEX p3ri_registrations_choices_idx ON public.p3ri_registrations USING gin (choices);
+
+-- Member emails are unique ignoring case (Ace migration
+-- 1794035764157_add_public_users_lower_email_unique_index, built concurrently).
+CREATE UNIQUE INDEX public_users_lower_email_unique ON public.public_users USING btree (lower((email)::text));
+
+-- Self-service member email changes (Ace migration 1794035765462_create_public_user_email_changes_table).
+CREATE TABLE public.public_user_email_changes (
+  id serial PRIMARY KEY,
+  user_id integer NOT NULL REFERENCES public.public_users(id) ON DELETE CASCADE,
+  old_email varchar(255) NOT NULL,
+  new_email varchar(255) NOT NULL,
+  code_hash varchar(64),
+  code_attempts integer NOT NULL DEFAULT 0,
+  code_expires_at timestamptz,
+  code_verified_at timestamptz,
+  token_hash varchar(64) UNIQUE,
+  token_expires_at timestamptz,
+  used_at timestamptz,
+  cancelled_at timestamptz,
+  created_at timestamptz NOT NULL,
+  updated_at timestamptz NOT NULL,
+  CONSTRAINT public_user_email_changes_code_attempts_check CHECK (code_attempts >= 0)
+);
+CREATE UNIQUE INDEX public_user_email_changes_open_user_unique ON public.public_user_email_changes (user_id)
+  WHERE used_at IS NULL AND cancelled_at IS NULL;

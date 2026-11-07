@@ -575,6 +575,23 @@ type PublicUser struct {
 	AccountStatus string             `json:"account_status"`
 }
 
+type PublicUserEmailChange struct {
+	ID             int32              `json:"id"`
+	UserID         int32              `json:"user_id"`
+	OldEmail       string             `json:"old_email"`
+	NewEmail       string             `json:"new_email"`
+	CodeHash       *string            `json:"code_hash"`
+	CodeAttempts   int32              `json:"code_attempts"`
+	CodeExpiresAt  pgtype.Timestamptz `json:"code_expires_at"`
+	CodeVerifiedAt pgtype.Timestamptz `json:"code_verified_at"`
+	TokenHash      *string            `json:"token_hash"`
+	TokenExpiresAt pgtype.Timestamptz `json:"token_expires_at"`
+	UsedAt         pgtype.Timestamptz `json:"used_at"`
+	CancelledAt    pgtype.Timestamptz `json:"cancelled_at"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+}
+
 type RuangCurhat struct {
 	ID                 int32              `json:"id"`
 	UserID             *int32             `json:"user_id"`
