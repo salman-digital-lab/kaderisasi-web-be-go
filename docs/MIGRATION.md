@@ -131,6 +131,13 @@ The code exchange and ID-token checks are unit-tested against a fake Google
   blank is still accepted. The mirrored schemas and `forms.Validate` are unchanged, so the
   differential unit tests still compare like for like; `make test-contract` will differ
   from Adonis only for payloads with an institution-less entry.
+- **Institutions come from the universities list.** Adonis stored any text. Go accepts an
+  institution only when it is a `universities.name`, or a name the member's stored profile
+  already holds for a non-school entry (so profiles saved earlier stay editable). SMA/SMK
+  (`degree: "high_school"`) entries are exempt: schools are free text. Applied on
+  `PUT /v2/profiles` and `members/submit` (issue with rule `database.exists` on
+  `education_history.N.institution`), and on custom form answers and guest data
+  (`422`, "Institusi pada … harus dipilih dari daftar."). See `internal/webapi/institutions.go`.
 - **`extra_data` (jsonb)** is passed through compacted. JavaScript's reordering of
   integer-like object keys is not reproduced.
 - **Unicode edge cases:** a lone UTF-16 surrogate, and the few characters whose lower-case

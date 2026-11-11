@@ -421,12 +421,19 @@ func (s *Server) submitMember(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		err = validators.EducationInstitutions(payload)
 	}
+	if err == nil {
+		err = s.unlistedProfileInstitutions(r.Context(), payload, nil)
+	}
 	var invalid *vine.Error
 	if errors.As(err, &invalid) {
 		writeJSON(w, http.StatusInternalServerError, struct {
 			Message string       `json:"message"`
 			Error   []vine.Issue `json:"error"`
 		}{invalid.Issues[0].Message, invalid.Issues})
+		return
+	}
+	if err != nil {
+		failure(w, err)
 		return
 	}
 	if err := member.SubmitMember(r.Context(), s.Pool, payload); err != nil {

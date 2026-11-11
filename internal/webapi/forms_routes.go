@@ -250,6 +250,12 @@ func (s *Server) registerActivityForm(w http.ResponseWriter, r *http.Request, us
 			invalidSubmission(w, errs)
 			return errHandled
 		}
+		if errs, err := s.unlistedAnswerInstitutions(r.Context(), forms.Schema(*form), data, js.Value{}, &user.ID); err != nil {
+			return err
+		} else if len(errs) > 0 {
+			invalidSubmission(w, errs)
+			return errHandled
+		}
 		_, err = q.RegistrationForUser(r.Context(), dbgen.RegistrationForUserParams{UserID: user.ID, ActivityID: id})
 		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 			return knexError(registrationForSQL, err)
@@ -302,6 +308,12 @@ func (s *Server) registerClubForm(w http.ResponseWriter, r *http.Request, user d
 		return err
 	}
 	if !valid {
+		invalidSubmission(w, errs)
+		return errHandled
+	}
+	if errs, err := s.unlistedAnswerInstitutions(r.Context(), forms.Schema(*form), data, js.Value{}, &user.ID); err != nil {
+		return err
+	} else if len(errs) > 0 {
 		invalidSubmission(w, errs)
 		return errHandled
 	}
@@ -459,6 +471,11 @@ func (s *Server) formSubmit(w http.ResponseWriter, r *http.Request) {
 				msg = errs[0].Message
 			}
 			return &forms.RequestError{Status: http.StatusUnprocessableEntity, Message: msg}
+		}
+		if errs, err := s.unlistedAnswerInstitutions(r.Context(), forms.StandaloneSchema(schema), data, js.Value{}, userID); err != nil {
+			return err
+		} else if len(errs) > 0 {
+			return &forms.RequestError{Status: http.StatusUnprocessableEntity, Message: errs[0].Message}
 		}
 		if err := forms.Claim(r.Context(), q, form, &token.String, userID, data, nil, now); err != nil {
 			return err

@@ -126,6 +126,10 @@ func (s *Server) updateProfile(w http.ResponseWriter, r *http.Request) {
 		failure(w, err)
 		return
 	}
+	if err := s.unlistedProfileInstitutions(r.Context(), payload, profile.EducationHistory); err != nil {
+		failure(w, err)
+		return
+	}
 	updated, err := member.UpdateProfile(r.Context(), s.Pool, *profile, payload, s.Config.Location)
 	if err != nil {
 		failure(w, err)

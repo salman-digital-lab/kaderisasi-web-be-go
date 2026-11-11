@@ -154,3 +154,16 @@ func WorkHistory(raw []byte) []Object {
 
 // MemberID is generateMemberId: the user id zero-padded to eight digits.
 func MemberID(id int32) string { return fmt.Sprintf("%08d", id) }
+
+// StoredInstitutions returns the non-school institutions a profile already
+// holds. They stay acceptable so that a profile saved before the universities
+// list became mandatory can still be edited without re-entering its education.
+func StoredInstitutions(raw []byte) map[string]bool {
+	stored := map[string]bool{}
+	for _, e := range historyEntries(raw) {
+		if e["degree"] != "high_school" && text(e["institution"]) != "" {
+			stored[text(e["institution"])] = true
+		}
+	}
+	return stored
+}

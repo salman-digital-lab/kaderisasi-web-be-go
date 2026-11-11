@@ -67,3 +67,77 @@ func GuestEducationErrors(guest js.Value) []SubmissionError {
 	}
 	return errs
 }
+
+// ListedInstitutions returns the institutions of an education answer (one
+// entry or a list of entries) that must come from the universities list:
+// every entry except SMA/SMK, whose schools are free text.
+func ListedInstitutions(v js.Value) []string {
+	entries := v.Items
+	if isRecord(v) {
+		entries = []js.Value{v}
+	}
+	var names []string
+	for _, entry := range entries {
+		degree, _ := get(entry, "degree")
+		if !isRecord(entry) || degree.String == "high_school" || blankText(entry, "institution") {
+			continue
+		}
+		institution, _ := get(entry, "institution")
+		names = append(names, js.Trim(institution.String))
+	}
+	return names
+}
+
+type educationAnswer struct {
+	key, label string
+	value      js.Value
+}
+
+// educationAnswers lists the education answers of a validated submission and
+// of the guest data sent with it.
+func educationAnswers(schema, data, guest js.Value) []educationAnswer {
+	var answers []educationAnswer
+	sections, _ := get(schema, "fields")
+	for _, section := range sections.Items {
+		for _, field := range fieldsOf(section) {
+			k, _ := get(field, "key")
+			kind, _ := get(field, "type")
+			label, _ := get(field, "label")
+			if value, ok := data.Get(k.String); ok && (kind.String == "education_history" || kind.String == "current_education") {
+				answers = append(answers, educationAnswer{k.String, label.String, value})
+			}
+		}
+	}
+	for _, field := range []struct{ key, label string }{{"education_history", "riwayat pendidikan"}, {"current_education", "pendidikan saat ini"}} {
+		if value, ok := guest.Get(field.key); ok {
+			answers = append(answers, educationAnswer{field.key, field.label, value})
+		}
+	}
+	return answers
+}
+
+// SubmissionInstitutions returns every institution in a submission that must
+// come from the universities list.
+func SubmissionInstitutions(schema, data, guest js.Value) []string {
+	var names []string
+	for _, answer := range educationAnswers(schema, data, guest) {
+		names = append(names, ListedInstitutions(answer.value)...)
+	}
+	return names
+}
+
+// UnlistedInstitutionErrors reports the education answers that name an
+// institution outside known.
+func UnlistedInstitutionErrors(schema, data, guest js.Value, known map[string]bool) []SubmissionError {
+	var errs []SubmissionError
+	for _, answer := range educationAnswers(schema, data, guest) {
+		for _, name := range ListedInstitutions(answer.value) {
+			if !known[name] {
+				key := answer.key
+				errs = append(errs, SubmissionError{Field: &key, Message: "Institusi pada " + answer.label + " harus dipilih dari daftar."})
+				break
+			}
+		}
+	}
+	return errs
+}

@@ -281,6 +281,12 @@ func (s *Server) guestRegister(w http.ResponseWriter, r *http.Request) {
 			invalidSubmission(w, errs)
 			return errHandled
 		}
+		if errs, err := s.unlistedAnswerInstitutions(r.Context(), forms.Schema(*form), data, guest, nil); err != nil {
+			return err
+		} else if len(errs) > 0 {
+			invalidSubmission(w, errs)
+			return errHandled
+		}
 		if err := forms.Claim(r.Context(), q, *form, sessionToken(payload), nil, data, nil, now); err != nil {
 			return err
 		}
@@ -352,6 +358,13 @@ func (s *Server) questionnaireEdit(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if !valid {
+			invalidSubmission(w, errs)
+			return
+		}
+		if errs, err := s.unlistedAnswerInstitutions(r.Context(), forms.Schema(*form), data, js.Value{}, &user.ID); err != nil {
+			generalError(w, err)
+			return
+		} else if len(errs) > 0 {
 			invalidSubmission(w, errs)
 			return
 		}
