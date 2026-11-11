@@ -5,6 +5,7 @@ package validators
 
 import (
 	"regexp"
+	"strconv"
 	"time"
 
 	"kaderisasi/web/internal/js"
@@ -79,6 +80,26 @@ var EducationHistory = func() vine.Arr {
 	a.Optional = true
 	return a
 }()
+
+// EducationInstitutions rejects a validated payload whose education_history
+// has an entry without an institution. It is deliberately stricter than the
+// retired web-be, so it is applied after the mirrored schemas rather than
+// inside them.
+func EducationInstitutions(payload js.Value) error {
+	history, _ := payload.Get("education_history")
+	var issues []vine.Issue
+	for i, entry := range history.Items {
+		if institution, ok := entry.Get("institution"); ok && institution.Kind == 's' && js.Trim(institution.String) != "" {
+			continue
+		}
+		issues = append(issues, vine.Issue{Message: "The institution field must be defined", Rule: "required",
+			Field: "education_history." + strconv.Itoa(i) + ".institution"})
+	}
+	if len(issues) > 0 {
+		return &vine.Error{Issues: issues}
+	}
+	return nil
+}
 
 var WorkHistory = func() vine.Arr {
 	a := vine.Arr{Of: vine.Obj{Props: []vine.Prop{

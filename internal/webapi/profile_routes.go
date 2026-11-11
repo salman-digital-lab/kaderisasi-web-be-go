@@ -110,6 +110,9 @@ func (s *Server) updateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	payload, err := vine.ValidateObject(validators.UpdateProfile, body)
+	if err == nil {
+		err = validators.EducationInstitutions(payload)
+	}
 	if err != nil {
 		failure(w, err)
 		return

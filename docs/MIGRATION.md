@@ -122,6 +122,15 @@ The code exchange and ID-token checks are unit-tested against a fake Google
   knex's `insert into ... - <message>` text.
 - **Nested form/query keys** (`a[b]=`, `a.b=`) are not expanded the way the `qs` library
   does. No auth route reads nested input.
+- **Education entries must name their institution.** Adonis accepted an education entry
+  with an empty `institution`. Go rejects it on `PUT /v2/profiles` and `members/submit`
+  (Vine-style `required` issue on `education_history.N.institution`, from
+  `validators.EducationInstitutions`), and on custom form submissions and guest
+  registrations (`422 INVALID_FORM_SUBMISSION`, from `forms.ValidateSubmission` and
+  `forms.GuestEducationErrors`). An optional `current_education` answer left entirely
+  blank is still accepted. The mirrored schemas and `forms.Validate` are unchanged, so the
+  differential unit tests still compare like for like; `make test-contract` will differ
+  from Adonis only for payloads with an institution-less entry.
 - **`extra_data` (jsonb)** is passed through compacted. JavaScript's reordering of
   integer-like object keys is not reproduced.
 - **Unicode edge cases:** a lone UTF-16 surrogate, and the few characters whose lower-case

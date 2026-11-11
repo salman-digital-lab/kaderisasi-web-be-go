@@ -268,7 +268,7 @@ func (s *Server) guestRegister(w http.ResponseWriter, r *http.Request) {
 		if !ok || answers.Kind == 'n' {
 			answers = js.Value{Kind: 'o', Fields: map[string]js.Value{}}
 		}
-		valid, data, errs, err := forms.Validate(forms.Schema(*form), answers)
+		valid, data, errs, err := forms.ValidateSubmission(forms.Schema(*form), answers)
 		if err != nil {
 			return err
 		}
@@ -276,10 +276,14 @@ func (s *Server) guestRegister(w http.ResponseWriter, r *http.Request) {
 			invalidSubmission(w, errs)
 			return errHandled
 		}
+		guest, _ := payload.Get("guest_data")
+		if errs := forms.GuestEducationErrors(guest); len(errs) > 0 {
+			invalidSubmission(w, errs)
+			return errHandled
+		}
 		if err := forms.Claim(r.Context(), q, *form, sessionToken(payload), nil, data, nil, now); err != nil {
 			return err
 		}
-		guest, _ := payload.Get("guest_data")
 		guestJSON, _ := guest.MarshalJSON()
 		answerJSON, _ := data.MarshalJSON()
 		created := member.Now()
@@ -342,7 +346,7 @@ func (s *Server) questionnaireEdit(w http.ResponseWriter, r *http.Request) {
 	}
 	answers, _ := payload.Get("questionnaire_answer")
 	if form != nil {
-		valid, data, errs, err := forms.Validate(forms.Schema(*form), answers)
+		valid, data, errs, err := forms.ValidateSubmission(forms.Schema(*form), answers)
 		if err != nil {
 			generalError(w, err)
 			return

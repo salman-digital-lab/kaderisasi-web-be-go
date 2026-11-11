@@ -242,7 +242,7 @@ func (s *Server) registerActivityForm(w http.ResponseWriter, r *http.Request, us
 			writeJSON(w, http.StatusBadRequest, message{"ACTIVE_CUSTOM_FORM_REQUIRED"})
 			return errHandled
 		}
-		valid, data, errs, err := forms.Validate(forms.Schema(*form), answers)
+		valid, data, errs, err := forms.ValidateSubmission(forms.Schema(*form), answers)
 		if err != nil {
 			return err
 		}
@@ -297,7 +297,7 @@ func (s *Server) registerClubForm(w http.ResponseWriter, r *http.Request, user d
 		writeJSON(w, http.StatusBadRequest, message{"ACTIVE_CUSTOM_FORM_REQUIRED"})
 		return errHandled
 	}
-	valid, data, errs, err := forms.Validate(forms.Schema(*form), answers)
+	valid, data, errs, err := forms.ValidateSubmission(forms.Schema(*form), answers)
 	if err != nil {
 		return err
 	}
@@ -449,7 +449,7 @@ func (s *Server) formSubmit(w http.ResponseWriter, r *http.Request) {
 		if session.SchemaHash != forms.SchemaHash(schema) {
 			return &forms.RequestError{Status: http.StatusConflict, Message: "FORM_SCHEMA_CHANGED"}
 		}
-		valid, data, errs, err := forms.Validate(forms.StandaloneSchema(schema), answers)
+		valid, data, errs, err := forms.ValidateSubmission(forms.StandaloneSchema(schema), answers)
 		if err != nil {
 			return err
 		}

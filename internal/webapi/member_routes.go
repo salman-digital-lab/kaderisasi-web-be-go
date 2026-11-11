@@ -418,6 +418,9 @@ func (s *Server) submitMember(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	payload, err := vine.ValidateObject(validators.SelfSubmit, body)
+	if err == nil {
+		err = validators.EducationInstitutions(payload)
+	}
 	var invalid *vine.Error
 	if errors.As(err, &invalid) {
 		writeJSON(w, http.StatusInternalServerError, struct {
