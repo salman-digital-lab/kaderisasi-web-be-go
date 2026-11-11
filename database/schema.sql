@@ -2243,3 +2243,24 @@ CREATE TABLE public.public_user_email_changes (
 );
 CREATE UNIQUE INDEX public_user_email_changes_open_user_unique ON public.public_user_email_changes (user_id)
   WHERE used_at IS NULL AND cancelled_at IS NULL;
+
+-- Audit trail of admin changes to member data (Ace migration
+-- 1794372885000_create_member_audit_logs_table). Insert-only.
+CREATE TABLE public.member_audit_logs (
+  id bigserial PRIMARY KEY,
+  profile_id integer,
+  user_id integer,
+  member_name varchar(255) NOT NULL DEFAULT '',
+  action varchar(40) NOT NULL,
+  changes jsonb NOT NULL DEFAULT '{}'::jsonb,
+  source varchar(40) NOT NULL DEFAULT 'admin',
+  actor_admin_user_id integer,
+  actor_name varchar(255) NOT NULL DEFAULT '',
+  request_id varchar(100),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT member_audit_logs_action_check CHECK (action IN ('created','profile_updated','regional_assignment_updated','credentials_updated','account_generated','deleted')),
+  CONSTRAINT member_audit_logs_changes_check CHECK (jsonb_typeof(changes) = 'object'),
+  CONSTRAINT member_audit_logs_subject_check CHECK (profile_id IS NOT NULL OR user_id IS NOT NULL)
+);
+CREATE INDEX member_audit_logs_profile_idx ON public.member_audit_logs (profile_id, id DESC);
+CREATE INDEX member_audit_logs_user_idx ON public.member_audit_logs (user_id, id DESC);

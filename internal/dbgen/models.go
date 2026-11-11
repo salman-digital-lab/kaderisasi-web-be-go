@@ -409,6 +409,20 @@ type IssuedCertificate struct {
 	RevokedBy           *int32             `json:"revoked_by"`
 }
 
+type MemberAuditLog struct {
+	ID               int64              `json:"id"`
+	ProfileID        *int32             `json:"profile_id"`
+	UserID           *int32             `json:"user_id"`
+	MemberName       string             `json:"member_name"`
+	Action           string             `json:"action"`
+	Changes          []byte             `json:"changes"`
+	Source           string             `json:"source"`
+	ActorAdminUserID *int32             `json:"actor_admin_user_id"`
+	ActorName        string             `json:"actor_name"`
+	RequestID        *string            `json:"request_id"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+}
+
 type MonthlyLeaderboard struct {
 	ID                  int32              `json:"id"`
 	UserID              *int32             `json:"user_id"`
